@@ -9,10 +9,20 @@ import re
 # --- 1. إعدادات الصفحة والهوية (المسؤول عن الأيقونة عند التنزيل) ---
 st.set_page_config(
     page_title="ALABTAL DICTIONARY",
-    page_icon="logo_animated.gif", # هذا السطر يضع اللوجو في تبويب المتصفح وعند التنزيل
+    page_icon="logo_animated.gif",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# هذا الكود الإضافي هو الذي سيحذف كلمة Streamlit من العنوان نهائياً
+st.markdown("""
+    <script>
+        var elements = window.parent.document.querySelectorAll('title');
+        if (elements.length > 0) {
+            elements[0].innerText = "ALABTAL DICTIONARY";
+        }
+    </script>
+    """, unsafe_allow_html=True)
 
 # --- 2. دالة النطق الصافية (تتجاهل الرموز) ---
 def speak(text):
