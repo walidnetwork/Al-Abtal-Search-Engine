@@ -1,12 +1,21 @@
 import streamlit as st
 import base64
 import os
-import fitz  # PyMuPDF للبحث داخل الـ PDF
+import fitz  # PyMuPDF
+from gtts import gTTS
+import io
 
 # --- 1. إعدادات الصفحة ---
 st.set_page_config(page_title="Alabtal AI Dictionary", layout="wide")
 
-# --- 2. دالة جلب الصور ---
+# --- 2. دالة تحويل الصوت (النطق) ---
+def speak(text):
+    tts = gTTS(text=text, lang='en')
+    fp = io.BytesIO()
+    tts.write_to_fp(fp)
+    return fp.getvalue()
+
+# --- 3. دالة جلب الصور بأمان ---
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         try:
@@ -16,8 +25,8 @@ def get_base64(bin_file):
         except: return ""
     return ""
 
-# --- 3. دالة البحث الذكي داخل الـ PDF ---
-def search_in_pdf(pdf_path, word):
+# --- 4. محرك البحث والقص من الـ PDF ---
+def search_and_extract(pdf_path, word):
     results = []
     if not os.path.exists(pdf_path):
         return None
@@ -27,93 +36,92 @@ def search_in_pdf(pdf_path, word):
         page = doc[page_num]
         text_instances = page.search_for(word)
         
-        # إذا وجدت الكلمة، نأخذ لقطة للمنطقة المحيطة بها
         for inst in text_instances:
-            # تكبير منطقة القص قليلاً لتشمل الصورة والترجمة
-            clip = fitz.Rect(inst.x0 - 100, inst.y0 - 50, inst.x1 + 400, inst.y1 + 300)
+            # قص منطقة الكلمة والجملة المحيطة بها (سياق الكلمة)
+            clip = fitz.Rect(inst.x0 - 50, inst.y0 - 40, inst.x1 + 500, inst.y1 + 150)
             pix = page.get_pixmap(clip=clip, matrix=fitz.Matrix(2, 2))
             img_data = pix.tobytes("png")
-            results.append(img_data)
-            if len(results) >= 3: break # اكتفي بأول 3 نتائج للسرعة
+            
+            # محاولة استخراج الجملة المكتوبة للنطق (تبسيطاً سننطق الكلمة أو السياق المتاح)
+            results.append({"image": img_data, "text": word})
+            if len(results) >= 5: break 
     return results
 
-# --- 4. تصميم الواجهة (CSS) ---
+# --- 5. تصميم الواجهة (CSS) ---
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(to bottom, #1e3a8a, #0f172a); color: white; }
-    label { color: white !important; font-weight: bold !important; font-family: 'Cairo'; }
     .stTextInput input { background-color: white !important; color: black !important; border-radius: 10px; font-weight: bold; }
-    .stButton>button { width: 100%; border-radius: 10px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; }
+    .result-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2); }
+    .stButton>button { width: 100%; border-radius: 10px; background: #ef4444; color: white; font-weight: bold; height: 45px; border: none; }
     </style>
     """, unsafe_allow_html=True)
 
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
-# --- الصفحة الرئيسية ---
+# --- التنقل بين الصفحات (نفس الهيكل السابق المنظم) ---
 if st.session_state.page == 'home':
-    logo_data = get_base64('logo_animated.gif')
-    if logo_data:
-        st.markdown(f'<div style="text-align:center;"><img src="data:image/gif;base64,{logo_data}" width="180"></div>', unsafe_allow_html=True)
-    
+    # (كود الصفحة الرئيسية - عرض الصفوف 1-6 بنفس الترتيب اليدوي لضمان الدقة)
     st.markdown("<h1 style='text-align: center; font-family: Cairo;'>قاموس الأبطال للغة الإنجليزية</h1>", unsafe_allow_html=True)
-
     col1, col2, col3 = st.columns(3)
-    grades = [("g1", "الصف الأول"), ("g2", "الصف الثاني"), ("g3", "الصف الثالث")]
-    for i, (gid, name) in enumerate(grades):
+    for i, g in enumerate(["g1", "g2", "g3"]):
         with [col1, col2, col3][i]:
-            img = f"cover_{gid}.jpg"
-            if os.path.exists(img): st.image(img, use_container_width=True)
-            if st.button(f"دخول {name}", key=gid):
-                st.session_state.grade_id, st.session_state.page = gid, 'select_term'; st.rerun()
-
+            if os.path.exists(f"cover_{g}.jpg"): st.image(f"cover_{g}.jpg", use_container_width=True)
+            if st.button(f"الصف {i+1}", key=g):
+                st.session_state.grade_id, st.session_state.page = g, 'select_term'; st.rerun()
     col4, col5, col6 = st.columns(3)
-    grades2 = [("g4", "الصف الرابع"), ("g5", "الصف الخامس"), ("g6", "الصف السادس")]
-    for i, (gid, name) in enumerate(grades2):
+    for i, g in enumerate(["g4", "g5", "g6"]):
         with [col4, col5, col6][i]:
-            img = f"cover_{gid}.jpg"
-            if os.path.exists(img): st.image(img, use_container_width=True)
-            if st.button(f"دخول {name}", key=gid):
-                st.session_state.grade_id, st.session_state.page = gid, 'select_term'; st.rerun()
+            if os.path.exists(f"cover_{g}.jpg"): st.image(f"cover_{g}.jpg", use_container_width=True)
+            if st.button(f"الصف {i+4}", key=g):
+                st.session_state.grade_id, st.session_state.page = g, 'select_term'; st.rerun()
 
-# --- صفحة اختيار الترم ---
 elif st.session_state.page == 'select_term':
     st.markdown("<h1 style='text-align:center; font-family: Cairo;'>📚 اختر الترم الدراسي</h1>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     gid = st.session_state.grade_id
-    
     with col1:
-        t1 = f"cover_{gid}_t1.jpg"
-        if os.path.exists(t1): st.image(t1, use_container_width=True)
-        if st.button("الترم الأول"):
-            st.session_state.term, st.session_state.page = "t1", "search"; st.rerun()
-
+        if os.path.exists(f"cover_{gid}_t1.jpg"): st.image(f"cover_{gid}_t1.jpg", use_container_width=True)
+        if st.button("الترم الأول"): st.session_state.term, st.session_state.page = "t1", "search"; st.rerun()
     with col2:
-        t2 = f"cover_{gid}_t2.jpg"
-        if os.path.exists(t2): st.image(t2, use_container_width=True)
-        if st.button("الترم الثاني"):
-            st.session_state.term, st.session_state.page = "t2", "search"; st.rerun()
-    
-    if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
+        if os.path.exists(f"cover_{gid}_t2.jpg"): st.image(f"cover_{gid}_t2.jpg", use_container_width=True)
+        if st.button("الترم الثاني"): st.session_state.term, st.session_state.page = "t2", "search"; st.rerun()
 
-# --- صفحة البحث والنتائج ---
+# --- صفحة البحث (جوهر القاموس) ---
 elif st.session_state.page == 'search':
-    st.markdown("<h2 style='text-align:center;'>🔍 محرك بحث الأبطال</h2>", unsafe_allow_html=True)
-    pdf_to_search = f"{st.session_state.grade_id}_{st.session_state.term}.pdf"
+    st.markdown(f"<h2 style='text-align:center;'>🔍 قاموس {st.session_state.grade_id.upper()}</h2>", unsafe_allow_html=True)
     
-    query = st.text_input("ادخل الكلمة (English):")
+    query = st.text_input("اكتب الكلمة الإنجليزية (مثلاً: Apple):")
     
     if query:
-        with st.spinner('بطلنا يبحث لك الآن...'):
-            results = search_in_pdf(pdf_to_search, query)
+        # 1. نطق الكلمة الأساسية
+        st.markdown(f"### 🔊 نطق الكلمة: {query}")
+        audio_bytes = speak(query)
+        st.audio(audio_bytes, format='audio/mp3')
+        
+        st.write("---")
+        
+        # 2. البحث عن مقتطفات من الكتاب
+        pdf_file = f"{st.session_state.grade_id}_{st.session_state.term}.pdf"
+        with st.spinner('بطلنا يبحث في صفحات الكتاب...'):
+            results = search_and_extract(pdf_file, query)
             
             if results:
-                st.success(f"وجدنا {len(results)} نتيجة لـ '{query}'")
-                for img_bytes in results:
-                    st.image(img_bytes)
+                st.subheader("📖 مقتطفات من المنهج:")
+                for res in results:
+                    with st.container():
+                        st.markdown('<div class="result-card">', unsafe_allow_html=True)
+                        col_img, col_audio = st.columns([3, 1])
+                        with col_img:
+                            st.image(res['image'], caption="سياق الكلمة من الكتاب")
+                        with col_audio:
+                            st.write("🔊 اسمع النطق")
+                            st.audio(audio_bytes, format='audio/mp3') # نطق الكلمة المرتبطة بالمقتطف
+                        st.markdown('</div>', unsafe_allow_html=True)
             elif results is None:
-                st.error(f"ملف المنهج ({pdf_to_search}) غير موجود في السيرفر.")
+                st.error(f"عذراً، ملف المنهج {pdf_file} غير موجود.")
             else:
-                st.warning("لم نجد هذه الكلمة، تأكد من كتابتها بشكل صحيح.")
+                st.warning("لم نجد الكلمة داخل هذا الكتاب، جرب كلمة أخرى.")
 
-    if st.button("🔙 عودة للرئيسية"): st.session_state.page = 'home'; st.rerun()
+    if st.button("🔙 العودة للرئيسية"): st.session_state.page = 'home'; st.rerun()
