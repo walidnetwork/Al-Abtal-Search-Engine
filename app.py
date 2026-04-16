@@ -1,11 +1,12 @@
 import streamlit as st
 import base64
 import os
+import fitz  # PyMuPDF للبحث داخل الـ PDF
 
 # --- 1. إعدادات الصفحة ---
 st.set_page_config(page_title="Alabtal AI Dictionary", layout="wide")
 
-# --- 2. دالة جلب الصور بأمان ---
+# --- 2. دالة جلب الصور ---
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         try:
@@ -15,71 +16,65 @@ def get_base64(bin_file):
         except: return ""
     return ""
 
-# --- 3. تصميم الواجهة (CSS) ---
+# --- 3. دالة البحث الذكي داخل الـ PDF ---
+def search_in_pdf(pdf_path, word):
+    results = []
+    if not os.path.exists(pdf_path):
+        return None
+    
+    doc = fitz.open(pdf_path)
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        text_instances = page.search_for(word)
+        
+        # إذا وجدت الكلمة، نأخذ لقطة للمنطقة المحيطة بها
+        for inst in text_instances:
+            # تكبير منطقة القص قليلاً لتشمل الصورة والترجمة
+            clip = fitz.Rect(inst.x0 - 100, inst.y0 - 50, inst.x1 + 400, inst.y1 + 300)
+            pix = page.get_pixmap(clip=clip, matrix=fitz.Matrix(2, 2))
+            img_data = pix.tobytes("png")
+            results.append(img_data)
+            if len(results) >= 3: break # اكتفي بأول 3 نتائج للسرعة
+    return results
+
+# --- 4. تصميم الواجهة (CSS) ---
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(to bottom, #1e3a8a, #0f172a); color: white; }
-    label { color: #f1f5f9 !important; font-weight: bold !important; font-family: 'Cairo', sans-serif; font-size: 1.2rem !important; }
-    .stTextInput input { 
-        background-color: white !important; 
-        color: black !important; 
-        border-radius: 10px !important; 
-        height: 45px !important;
-        font-weight: bold !important;
-    }
-    .main-header { text-align: center; padding: 10px; }
-    .logo-img { width: 180px; margin-bottom: 10px; }
-    .stButton>button { width: 100%; border-radius: 10px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; margin-top: 10px; }
+    label { color: white !important; font-weight: bold !important; font-family: 'Cairo'; }
+    .stTextInput input { background-color: white !important; color: black !important; border-radius: 10px; font-weight: bold; }
+    .stButton>button { width: 100%; border-radius: 10px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; }
     </style>
     """, unsafe_allow_html=True)
 
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
-# --- الصفحة الرئيسية (بترتيب إجباري 1-6) ---
+# --- الصفحة الرئيسية ---
 if st.session_state.page == 'home':
     logo_data = get_base64('logo_animated.gif')
     if logo_data:
-        st.markdown(f'<div class="main-header"><img src="data:image/gif;base64,{logo_data}" class="logo-img"></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align:center;"><img src="data:image/gif;base64,{logo_data}" width="180"></div>', unsafe_allow_html=True)
     
     st.markdown("<h1 style='text-align: center; font-family: Cairo;'>قاموس الأبطال للغة الإنجليزية</h1>", unsafe_allow_html=True)
 
-    # الترتيب اليدوي لضمان عدم اللخبطة
-    # السطر الأول: الصفوف 1، 2، 3
     col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        if os.path.exists("cover_g1.jpg"): st.image("cover_g1.jpg", use_container_width=True)
-        if st.button("دخول الصف الأول", key="g1"):
-            st.session_state.grade_id, st.session_state.page = "g1", "select_term"; st.rerun()
+    grades = [("g1", "الصف الأول"), ("g2", "الصف الثاني"), ("g3", "الصف الثالث")]
+    for i, (gid, name) in enumerate(grades):
+        with [col1, col2, col3][i]:
+            img = f"cover_{gid}.jpg"
+            if os.path.exists(img): st.image(img, use_container_width=True)
+            if st.button(f"دخول {name}", key=gid):
+                st.session_state.grade_id, st.session_state.page = gid, 'select_term'; st.rerun()
 
-    with col2:
-        if os.path.exists("cover_g2.jpg"): st.image("cover_g2.jpg", use_container_width=True)
-        if st.button("دخول الصف الثاني", key="g2"):
-            st.session_state.grade_id, st.session_state.page = "g2", "select_term"; st.rerun()
-
-    with col3:
-        if os.path.exists("cover_g3.jpg"): st.image("cover_g3.jpg", use_container_width=True)
-        if st.button("دخول الصف الثالث", key="g3"):
-            st.session_state.grade_id, st.session_state.page = "g3", "select_term"; st.rerun()
-
-    # السطر الثاني: الصفوف 4، 5، 6
     col4, col5, col6 = st.columns(3)
-
-    with col4:
-        if os.path.exists("cover_g4.jpg"): st.image("cover_g4.jpg", use_container_width=True)
-        if st.button("دخول الصف الرابع", key="g4"):
-            st.session_state.grade_id, st.session_state.page = "g4", "select_term"; st.rerun()
-
-    with col5:
-        if os.path.exists("cover_g5.jpg"): st.image("cover_g5.jpg", use_container_width=True)
-        if st.button("دخول الصف الخامس", key="g5"):
-            st.session_state.grade_id, st.session_state.page = "g5", "select_term"; st.rerun()
-
-    with col6:
-        if os.path.exists("cover_g6.jpg"): st.image("cover_g6.jpg", use_container_width=True)
-        if st.button("دخول الصف السادس", key="g6"):
-            st.session_state.grade_id, st.session_state.page = "g6", "select_term"; st.rerun()
+    grades2 = [("g4", "الصف الرابع"), ("g5", "الصف الخامس"), ("g6", "الصف السادس")]
+    for i, (gid, name) in enumerate(grades2):
+        with [col4, col5, col6][i]:
+            img = f"cover_{gid}.jpg"
+            if os.path.exists(img): st.image(img, use_container_width=True)
+            if st.button(f"دخول {name}", key=gid):
+                st.session_state.grade_id, st.session_state.page = gid, 'select_term'; st.rerun()
 
 # --- صفحة اختيار الترم ---
 elif st.session_state.page == 'select_term':
@@ -89,23 +84,36 @@ elif st.session_state.page == 'select_term':
     
     with col1:
         t1 = f"cover_{gid}_t1.jpg"
-        if os.path.exists(t1): st.image(t1, caption="الترم الأول", use_container_width=True)
-        if st.button("تصفح الترم الأول"):
-            st.session_state.term, st.session_state.page = "الترم الأول", "search"; st.rerun()
+        if os.path.exists(t1): st.image(t1, use_container_width=True)
+        if st.button("الترم الأول"):
+            st.session_state.term, st.session_state.page = "t1", "search"; st.rerun()
 
     with col2:
         t2 = f"cover_{gid}_t2.jpg"
-        if os.path.exists(t2): st.image(t2, caption="الترم الثاني", use_container_width=True)
-        if st.button("تصفح الترم الثاني"):
-            st.session_state.term, st.session_state.page = "الترم الثاني", "search"; st.rerun()
+        if os.path.exists(t2): st.image(t2, use_container_width=True)
+        if st.button("الترم الثاني"):
+            st.session_state.term, st.session_state.page = "t2", "search"; st.rerun()
     
-    if st.button("🔙 العودة لاختيار الصف"):
-        st.session_state.page = 'home'; st.rerun()
+    if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
 
-# --- صفحة البحث ---
+# --- صفحة البحث والنتائج ---
 elif st.session_state.page == 'search':
-    st.markdown("<h2 style='text-align:center; font-family: Cairo;'>🔍 محرك بحث الأبطال</h2>", unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align:center;'>الصف: {st.session_state.grade_id.upper()} | {st.session_state.term}</p>", unsafe_allow_html=True)
-    user_query = st.text_input("أدخل الكلمة الإنجليزية التي تبحث عنها هنا:")
-    if st.button("🔙 العودة للرئيسية"):
-        st.session_state.page = 'home'; st.rerun()
+    st.markdown("<h2 style='text-align:center;'>🔍 محرك بحث الأبطال</h2>", unsafe_allow_html=True)
+    pdf_to_search = f"{st.session_state.grade_id}_{st.session_state.term}.pdf"
+    
+    query = st.text_input("ادخل الكلمة (English):")
+    
+    if query:
+        with st.spinner('بطلنا يبحث لك الآن...'):
+            results = search_in_pdf(pdf_to_search, query)
+            
+            if results:
+                st.success(f"وجدنا {len(results)} نتيجة لـ '{query}'")
+                for img_bytes in results:
+                    st.image(img_bytes)
+            elif results is None:
+                st.error(f"ملف المنهج ({pdf_to_search}) غير موجود في السيرفر.")
+            else:
+                st.warning("لم نجد هذه الكلمة، تأكد من كتابتها بشكل صحيح.")
+
+    if st.button("🔙 عودة للرئيسية"): st.session_state.page = 'home'; st.rerun()
