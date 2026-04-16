@@ -17,6 +17,7 @@ st.set_page_config(
 # --- 2. دالة النطق الصافية (تتجاهل الرموز) ---
 def speak(text):
     try:
+        # حذف أي رموز غير أحرف أو أرقام لضمان نطق إنجليزي سليم ومثالي
         clean_text = re.sub(r'[^a-zA-Z0-9\s,.\'!?]', '', text)
         tts = gTTS(text=clean_text, lang='en')
         fp = io.BytesIO()
@@ -24,7 +25,7 @@ def speak(text):
         return fp.getvalue()
     except: return None
 
-# --- 3. دالة معالجة الصور ---
+# --- 3. دالة معالجة الصور (Base64) ---
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         try:
@@ -34,7 +35,7 @@ def get_base64(bin_file):
         except: return ""
     return ""
 
-# --- 4. المحرك الذكي المطور ---
+# --- 4. المحرك الذكي المطور (استخلاص جمل دقيقة + صفحات كاملة) ---
 def advanced_search(pdf_path, word):
     extracted_sentences = []
     full_pages = []
@@ -49,8 +50,10 @@ def advanced_search(pdf_path, word):
             if word_pattern.search(text):
                 lines = text.split('\n')
                 for line in lines:
+                    # تنظيف السطر من الرموز الزخرفية قبل العرض
                     clean_line = re.sub(r'[^a-zA-Z0-9\s,.\'!?]', '', line).strip()
                     if word_pattern.search(clean_line) and len(clean_line) > len(word):
+                        # تمييز الكلمة باللون الأحمر وخط عريض
                         display_text = re.sub(word_pattern, f"<b style='color:#ef4444;'>{word}</b>", clean_line)
                         if clean_line not in [s['raw'] for s in extracted_sentences]:
                             extracted_sentences.append({
@@ -79,7 +82,7 @@ st.markdown("""
     }
     .stButton>button { width: 100%; border-radius: 12px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; font-size: 1.1rem; }
     .section-header { border-bottom: 3px solid #ef4444; padding-bottom: 5px; margin-top: 40px; font-family: 'Cairo'; }
-    .bio-text { font-style: italic; color: #cbd5e1; font-size: 0.95rem; margin-top: 5px; line-height: 1.6; }
+    .bio-text { font-style: italic; color: #cbd5e1; font-size: 1rem; margin-top: 5px; line-height: 1.6; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -111,7 +114,7 @@ elif st.session_state.page == 'select_term':
             if os.path.exists(t_cover): st.image(t_cover, use_container_width=True)
             if st.button(f"تصفح الترم {'الأول' if t=='t1' else 'الثاني'}", key=f"btn_{t}"):
                 st.session_state.term, st.session_state.page = t, 'search'; st.rerun()
-    if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
+    if st.button("🔙 عودة للقائمة الرئيسية"): st.session_state.page = 'home'; st.rerun()
 
 # --- صفحة البحث والنتائج ---
 elif st.session_state.page == 'search':
@@ -143,7 +146,7 @@ elif st.session_state.page == 'search':
             else: st.warning("لم نجد نتائج.")
     if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
 
-# --- 7. التذييل (Footer) ومعلومات المبدع والبايو المعدل ---
+# --- 7. التذييل (Footer) ومعلومات المبدع والبايو المعدل والرابط الصحيح ---
 st.markdown("<br><br>", unsafe_allow_html=True)
 f_c1, f_c2, f_c3 = st.columns([1, 2, 1])
 with f_c2:
@@ -151,13 +154,13 @@ with f_c2:
     p_img = get_base64('personal_photo.jpg')
     if p_img: st.markdown(f'<img src="data:image/jpeg;base64,{p_img}" style="width:110px; border-radius:50%; border:3px solid #ef4444;">', unsafe_allow_html=True)
     st.markdown("### Created by Mr. Walid")
-    # البايو المعدل حسب طلبك
+    # البايو المعدل
     st.markdown("""
         <p class='bio-text'>
         مؤلف سلسلة كتب الأبطال ومدرس لغة إنجليزية متخصص في تأليف وتطوير المحتوى التعليمي.
         </p>
     """, unsafe_allow_html=True)
     st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
-    # رابط صفحة السلسلة الصحيح
-    st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Heroesseries123)") 
+    # رابط صفحة سلسلة كتب الأبطال الصحيح
+    st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Alabtalbooks)") 
     st.markdown("</div>", unsafe_allow_html=True)
