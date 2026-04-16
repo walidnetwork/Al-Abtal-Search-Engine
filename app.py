@@ -32,7 +32,7 @@ def get_base64(bin_file):
         except: return ""
     return ""
 
-# --- 4. محرك البحث الذكي (استخراج جمل + صفحات كاملة) ---
+# --- 4. محرك البحث الذكي (استخراج جمل محددة + صفحات كاملة) ---
 def advanced_search(pdf_path, word):
     extracted_sentences = []
     full_pages = []
@@ -41,7 +41,8 @@ def advanced_search(pdf_path, word):
     
     try:
         doc = fitz.open(pdf_path)
-        word_pattern = re.compile(re.escape(word), re.IGNORECASE)
+        # البحث عن الكلمة مع تجاهل حالة الأحرف
+        word_pattern = re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE)
         
         found_pages_indices = []
 
@@ -49,22 +50,30 @@ def advanced_search(pdf_path, word):
             page = doc[page_num]
             text = page.get_text("text")
             
+            # إذا وجدت الكلمة في الصفحة
             if word_pattern.search(text):
-                # 1. استخراج الجمل منفصلة
-                sentences = re.split(r'(?<=[.!?])\s+', text)
-                for sentence in sentences:
-                    if word_pattern.search(sentence):
-                        clean_s = sentence.replace('\n', ' ').strip()
-                        if clean_s not in [s['text'] for s in extracted_sentences]:
-                            extracted_sentences.append({"text": clean_s, "page": page_num + 1})
+                # تقسيم النص إلى أسطر/جمل نظيفة
+                lines = text.split('\n')
+                for line in lines:
+                    if word_pattern.search(line) and len(line.strip()) > len(word):
+                        clean_line = line.strip()
+                        # تمييز الكلمة داخل الجملة لجعلها بارزة
+                        highlighted_text = re.sub(word_pattern, f"<u>{word}</u>", clean_line)
+                        
+                        if clean_line not in [s['raw'] for s in extracted_sentences]:
+                            extracted_sentences.append({
+                                "display": highlighted_text, 
+                                "raw": clean_line,
+                                "page": page_num + 1
+                            })
 
-                # 2. حفظ الصفحة كاملة كصورة
+                # حفظ الصفحة كاملة كصورة
                 if page_num not in found_pages_indices:
-                    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2)) # جودة عالية
+                    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
                     full_pages.append({"num": page_num + 1, "image": pix.tobytes("png")})
                     found_pages_indices.append(page_num)
                     
-            if len(full_pages) >= 5: break # تحديد النتائج للسرعة
+            if len(full_pages) >= 5: break
             
         return extracted_sentences, full_pages
     except: return [], []
@@ -76,24 +85,24 @@ st.markdown("""
     .sentence-card { 
         background: white; 
         color: #0f172a; 
-        padding: 20px; 
+        padding: 25px; 
         border-radius: 15px; 
-        margin-bottom: 10px; 
-        border-left: 8px solid #ef4444;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+        margin-bottom: 15px; 
+        border-right: 10px solid #ef4444;
+        box-shadow: 0px 6px 15px rgba(0,0,0,0.4);
+        text-align: left;
     }
-    .sentence-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 5px; }
-    .page-info { color: #64748b; font-size: 0.9rem; }
-    .section-title { border-bottom: 2px solid #ef4444; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px; font-family: 'Cairo'; }
-    .stTextInput input { background-color: white !important; color: black !important; font-weight: bold; border-radius: 10px; }
-    .stButton>button { width: 100%; border-radius: 10px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; }
+    .sentence-text { font-size: 1.6rem; font-weight: 800; color: #1e3a8a; line-height: 1.4; }
+    .sentence-text u { color: #ef4444; text-decoration: none; border-bottom: 3px solid #ef4444; }
+    .page-info { color: #64748b; font-size: 0.9rem; margin-top: 10px; font-weight: bold; }
+    .section-title { border-bottom: 2px solid #ef4444; padding-bottom: 10px; margin-top: 40px; font-family: 'Cairo'; }
+    .stTextInput input { background-color: white !important; color: black !important; font-size: 1.2rem !important; height: 50px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 6. نظام التنقل ---
 if 'page' not in st.session_state: st.session_state.page = 'home'
 
-# --- الصفحة الرئيسية واختيار الترم (نفس الهيكل السابق المستقر) ---
+# --- التنقل (Home / Terms) ---
 if st.session_state.page == 'home':
     logo = get_base64('logo_animated.gif')
     if logo: st.markdown(f'<center><img src="data:image/gif;base64,{logo}" width="200"></center>', unsafe_allow_html=True)
@@ -119,13 +128,12 @@ elif st.session_state.page == 'select_term':
                 st.session_state.term, st.session_state.page = t, 'search'; st.rerun()
     if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
 
-# --- صفحة البحث والنتائج الجديدة ---
+# --- صفحة البحث والنتائج المعدلة ---
 elif st.session_state.page == 'search':
     st.markdown(f"<h2 style='text-align:center;'>🔍 محرك بحث الأبطال</h2>", unsafe_allow_html=True)
     query = st.text_input("ادخل الكلمة (English):")
     
     if query:
-        # 1. نطق الكلمة الأساسية
         st.markdown(f"### 🔊 نطق الكلمة: {query}")
         q_audio = speak(query)
         if q_audio: st.audio(q_audio)
@@ -135,31 +143,30 @@ elif st.session_state.page == 'search':
             sentences, pages = advanced_search(pdf_file, query)
             
             if sentences:
-                # 2. عرض الجمل المستخلصة
                 st.markdown("<h3 class='section-title'>📝 جمل من المنهج</h3>", unsafe_allow_html=True)
                 for s in sentences:
                     st.markdown(f"""
                     <div class="sentence-card">
-                        <p class="sentence-text">{s['text']}</p>
+                        <p class="sentence-text">{s['display']}</p>
                         <p class="page-info">ذكرت في صفحة: {s['page']}</p>
                     </div>
                     """, unsafe_allow_html=True)
+                    
+                    # زر النطق مع النص المطلوب
                     st.write("🔊 استمع للجملة:")
-                    s_audio = speak(s['text'])
+                    s_audio = speak(s['raw'])
                     if s_audio: st.audio(s_audio)
                 
-                # 3. عرض الصفحات كاملة
                 st.markdown("<h3 class='section-title'>📖 صفحات الكتاب كاملة</h3>", unsafe_allow_html=True)
                 for p in pages:
                     st.markdown(f"**الصفحة رقم: {p['num']}**")
                     st.image(p['image'], use_container_width=True)
-                    st.write("---")
             else:
-                st.warning("لم نجد نتائج للكلمة المطلوبة.")
+                st.warning("لم نجد نتائج دقيقة للكلمة المطلوبة.")
 
-    if st.button("🔙 عودة للرئيسية"): st.session_state.page = 'home'; st.rerun()
+    if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
 
-# --- التذييل (Footer) ---
+# --- Footer ---
 st.markdown("---")
 f_col1, f_col2, f_col3 = st.columns([1, 2, 1])
 with f_col2:
