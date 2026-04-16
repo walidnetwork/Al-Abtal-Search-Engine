@@ -14,10 +14,27 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. دالة النطق الصافية (تتجاهل الرموز) ---
+# --- 2. إضافة "صوت النقرة" عبر JavaScript ---
+# هذا الكود يجعل أي زر في الصفحة يصدر صوتاً عند النقر عليه
+st.components.v1.html(
+    """
+    <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+    <script>
+    const buttons = window.parent.document.querySelectorAll(".stButton button");
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            const audio = document.getElementById("clickSound");
+            audio.play();
+        });
+    });
+    </script>
+    """,
+    height=0,
+)
+
+# --- 3. دالة النطق الصافية (تتجاهل الرموز) ---
 def speak(text):
     try:
-        # حذف أي رموز غير أحرف أو أرقام لضمان نطق إنجليزي سليم ومثالي
         clean_text = re.sub(r'[^a-zA-Z0-9\s,.\'!?]', '', text)
         tts = gTTS(text=clean_text, lang='en')
         fp = io.BytesIO()
@@ -25,7 +42,7 @@ def speak(text):
         return fp.getvalue()
     except: return None
 
-# --- 3. دالة معالجة الصور (Base64) ---
+# --- 4. دالة معالجة الصور ---
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         try:
@@ -35,7 +52,7 @@ def get_base64(bin_file):
         except: return ""
     return ""
 
-# --- 4. المحرك الذكي المطور (استخلاص جمل دقيقة + صفحات كاملة) ---
+# --- 5. المحرك الذكي المطور ---
 def advanced_search(pdf_path, word):
     extracted_sentences = []
     full_pages = []
@@ -50,10 +67,8 @@ def advanced_search(pdf_path, word):
             if word_pattern.search(text):
                 lines = text.split('\n')
                 for line in lines:
-                    # تنظيف السطر من الرموز الزخرفية قبل العرض
                     clean_line = re.sub(r'[^a-zA-Z0-9\s,.\'!?]', '', line).strip()
                     if word_pattern.search(clean_line) and len(clean_line) > len(word):
-                        # تمييز الكلمة باللون الأحمر وخط عريض
                         display_text = re.sub(word_pattern, f"<b style='color:#ef4444;'>{word}</b>", clean_line)
                         if clean_line not in [s['raw'] for s in extracted_sentences]:
                             extracted_sentences.append({
@@ -69,7 +84,7 @@ def advanced_search(pdf_path, word):
         return extracted_sentences, full_pages
     except: return [], []
 
-# --- 5. هندسة الواجهة (CSS) ---
+# --- 6. هندسة الواجهة (CSS) ---
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(to bottom, #1e3a8a, #0f172a); color: white; }
@@ -81,15 +96,13 @@ st.markdown("""
         margin-bottom: 10px; border-right: 10px solid #ef4444; box-shadow: 0px 6px 15px rgba(0,0,0,0.3);
     }
     .stButton>button { width: 100%; border-radius: 12px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; font-size: 1.1rem; }
-    .section-header { border-bottom: 3px solid #ef4444; padding-bottom: 5px; margin-top: 40px; font-family: 'Cairo'; }
     .bio-text { font-style: italic; color: #cbd5e1; font-size: 1rem; margin-top: 5px; line-height: 1.6; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 6. نظام التنقل ---
 if 'page' not in st.session_state: st.session_state.page = 'home'
 
-# --- الصفحة الرئيسية ---
+# --- التنقل بين الصفحات ---
 if st.session_state.page == 'home':
     logo_b64 = get_base64('logo_animated.gif')
     if logo_b64: st.markdown(f'<center><img src="data:image/gif;base64,{logo_b64}" width="220"></center>', unsafe_allow_html=True)
@@ -103,7 +116,6 @@ if st.session_state.page == 'home':
                 if st.button(f"دخول الصف {gid[1]}", key=gid):
                     st.session_state.grade_id, st.session_state.page = gid, 'select_term'; st.rerun()
 
-# --- صفحة اختيار الترم ---
 elif st.session_state.page == 'select_term':
     st.markdown("<h1 style='text-align:center; font-family: Cairo;'>📚 اختر الترم الدراسي</h1>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -116,7 +128,6 @@ elif st.session_state.page == 'select_term':
                 st.session_state.term, st.session_state.page = t, 'search'; st.rerun()
     if st.button("🔙 عودة للقائمة الرئيسية"): st.session_state.page = 'home'; st.rerun()
 
-# --- صفحة البحث والنتائج ---
 elif st.session_state.page == 'search':
     st.markdown("<h2 style='text-align:center; font-family: Cairo;'>🔍 محرك بحث الأبطال</h2>", unsafe_allow_html=True)
     query = st.text_input("ادخل الكلمة (English):", placeholder="ابحث هنا...")
@@ -146,7 +157,7 @@ elif st.session_state.page == 'search':
             else: st.warning("لم نجد نتائج.")
     if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
 
-# --- 7. التذييل (Footer) ومعلومات المبدع والبايو المعدل والرابط الصحيح ---
+# --- 7. التذييل (Footer) ---
 st.markdown("<br><br>", unsafe_allow_html=True)
 f_c1, f_c2, f_c3 = st.columns([1, 2, 1])
 with f_c2:
@@ -154,13 +165,7 @@ with f_c2:
     p_img = get_base64('personal_photo.jpg')
     if p_img: st.markdown(f'<img src="data:image/jpeg;base64,{p_img}" style="width:110px; border-radius:50%; border:3px solid #ef4444;">', unsafe_allow_html=True)
     st.markdown("### Created by Mr. Walid")
-    # البايو المعدل
-    st.markdown("""
-        <p class='bio-text'>
-        مؤلف سلسلة كتب الأبطال ومدرس لغة إنجليزية متخصص في تأليف وتطوير المحتوى التعليمي.
-        </p>
-    """, unsafe_allow_html=True)
+    st.markdown("<p class='bio-text'>مؤلف سلسلة كتب الأبطال ومدرس لغة إنجليزية متخصص في تأليف وتطوير المحتوى التعليمي.</p>", unsafe_allow_html=True)
     st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
-    # رابط صفحة سلسلة كتب الأبطال الصحيح
     st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Alabtalbooks)") 
     st.markdown("</div>", unsafe_allow_html=True)
