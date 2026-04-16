@@ -63,47 +63,61 @@ if st.session_state.page == 'home':
 
     for i, (name, img_path) in enumerate(grades):
         with all_columns[i]:
+            # محاولة إظهار غلاف الصف (jpg أو png)
+            if not os.path.exists(img_path):
+                img_path = img_path.replace(".jpg", ".png")
+            
             if os.path.exists(img_path):
                 st.image(img_path, use_container_width=True)
+            
             if st.button(f"دخول {name}", key=name):
-                st.session_state.grade = name.replace(" ", "").lower() # تصبح g1, g2...
+                st.session_state.grade = name.replace(" ", "").lower()
                 st.session_state.page = 'select_term'
                 st.rerun()
 
-# --- صفحة اختيار الترم (المحدثة لإظهار الأغلفة) ---
+# --- صفحة اختيار الترم (ذكية في البحث عن الصور) ---
 elif st.session_state.page == 'select_term':
     st.markdown(f"<h2 style='text-align:center; font-family: Cairo;'>📚 اختر الترم الدراسي - {st.session_state.grade.upper()}</h2>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
-    
-    # مصفوفة بأسماء الملفات المحتملة للترمين
-    # الكود سيبحث عن cover_g1_t1.jpg أو cover_g1_t1.png وهكذا
     grade_code = st.session_state.grade # مثل g1
     
+    # الترم الأول
     with col1:
         st.markdown('<div class="cover-box">', unsafe_allow_html=True)
-        t1_filename = f"cover_{grade_code}_t1.jpg"
-        if not os.path.exists(t1_filename): t1_filename = f"cover_{grade_code}_t1.png" # تجربة png إذا لم يجد jpg
+        # مصفوفة احتمالات الملف للترم الأول
+        possible_t1 = [f"cover_{grade_code}_t1.jpg", f"cover_{grade_code}_t1.png", f"cover_{grade_code}_t1.jpeg"]
+        found_t1 = None
+        for f in possible_t1:
+            if os.path.exists(f):
+                found_t1 = f
+                break
         
-        if os.path.exists(t1_filename):
-            st.image(t1_filename, caption="غلاف الترم الأول", use_container_width=True)
+        if found_t1:
+            st.image(found_t1, caption="الترم الأول", use_container_width=True)
         else:
-            st.warning(f"غلاف الترم الأول ({t1_filename}) غير موجود")
+            st.warning(f"⚠️ غلاف الترم الأول غير موجود (يرجى التأكد من تسميته cover_{grade_code}_t1.jpg)")
         
         if st.button("تصفح كلمات الترم الأول", key="btn_t1"):
             st.session_state.term, st.session_state.page = "t1", "search"
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # الترم الثاني
     with col2:
         st.markdown('<div class="cover-box">', unsafe_allow_html=True)
-        t2_filename = f"cover_{grade_code}_t2.jpg"
-        if not os.path.exists(t2_filename): t2_filename = f"cover_{grade_code}_t2.png"
+        # مصفوفة احتمالات الملف للترم الثاني
+        possible_t2 = [f"cover_{grade_code}_t2.jpg", f"cover_{grade_code}_t2.png", f"cover_{grade_code}_t2.jpeg"]
+        found_t2 = None
+        for f in possible_t2:
+            if os.path.exists(f):
+                found_t2 = f
+                break
         
-        if os.path.exists(t2_filename):
-            st.image(t2_filename, caption="غلاف الترم الثاني", use_container_width=True)
+        if found_t2:
+            st.image(found_t2, caption="الترم الثاني", use_container_width=True)
         else:
-            st.warning(f"غلاف الترم الثاني ({t2_filename}) غير موجود")
+            st.warning(f"⚠️ غلاف الترم الثاني غير موجود (يرجى التأكد من تسميته cover_{grade_code}_t2.jpg)")
             
         if st.button("تصفح كلمات الترم الثاني", key="btn_t2"):
             st.session_state.term, st.session_state.page = "t2", "search"
