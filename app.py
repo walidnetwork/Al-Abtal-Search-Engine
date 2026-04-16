@@ -6,48 +6,15 @@ from gtts import gTTS
 import io
 import re
 
-# --- 1. إعدادات الصفحة والهوية ---
+# --- 1. إعدادات الصفحة والهوية (المسؤول عن الأيقونة عند التنزيل) ---
 st.set_page_config(
     page_title="ALABTAL DICTIONARY",
-    page_icon="logo_animated.gif",
+    page_icon="logo_animated.gif", # هذا السطر يضع اللوجو في تبويب المتصفح وعند التنزيل
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. دالة معالجة الصور (Base64) ---
-def get_base64(bin_file):
-    if os.path.exists(bin_file):
-        try:
-            with open(bin_file, 'rb') as f:
-                data = f.read()
-            return base64.b64encode(data).decode()
-        except: return ""
-    return ""
-
-# --- 3. إخفاء هوية Streamlit وتخصيص شاشة التحميل ---
-st.markdown("""
-    <style>
-    /* إخفاء القوائم الافتراضية لـ Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* تنسيق التطبيق العام */
-    .stApp { background: linear-gradient(to bottom, #1e3a8a, #0f172a); color: white; }
-    .main-title { text-align: center; font-family: 'Cairo'; font-size: 3rem; margin-bottom: 0; }
-    label { color: white !important; font-weight: bold !important; font-family: 'Cairo'; font-size: 1.2rem !important; }
-    .stTextInput input { background-color: white !important; color: black !important; font-weight: bold; border-radius: 12px; height: 50px; }
-    .sentence-card { 
-        background: white; color: #0f172a; padding: 25px; border-radius: 15px; 
-        margin-bottom: 10px; border-right: 10px solid #ef4444; box-shadow: 0px 6px 15px rgba(0,0,0,0.3);
-    }
-    .stButton>button { width: 100%; border-radius: 12px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; font-size: 1.1rem; }
-    .section-header { border-bottom: 3px solid #ef4444; padding-bottom: 5px; margin-top: 40px; font-family: 'Cairo'; }
-    .bio-text { font-style: italic; color: #cbd5e1; font-size: 1rem; margin-top: 5px; line-height: 1.6; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- 4. دالة النطق الصافية ---
+# --- 2. دالة النطق الصافية (تتجاهل الرموز) ---
 def speak(text):
     try:
         clean_text = re.sub(r'[^a-zA-Z0-9\s,.\'!?]', '', text)
@@ -57,7 +24,17 @@ def speak(text):
         return fp.getvalue()
     except: return None
 
-# --- 5. المحرك الذكي المطور ---
+# --- 3. دالة معالجة الصور (Base64) ---
+def get_base64(bin_file):
+    if os.path.exists(bin_file):
+        try:
+            with open(bin_file, 'rb') as f:
+                data = f.read()
+            return base64.b64encode(data).decode()
+        except: return ""
+    return ""
+
+# --- 4. المحرك الذكي المطور (استخلاص جمل دقيقة + صفحات كاملة) ---
 def advanced_search(pdf_path, word):
     extracted_sentences = []
     full_pages = []
@@ -89,6 +66,30 @@ def advanced_search(pdf_path, word):
         return extracted_sentences, full_pages
     except: return [], []
 
+# --- 5. هندسة الواجهة (CSS) مع دعم إخفاء هوية Streamlit ---
+st.markdown("""
+    <style>
+    /* إخفاء هوية المنصة لإظهار التطبيق بشكل احترافي */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    .stApp { background: linear-gradient(to bottom, #1e3a8a, #0f172a); color: white; }
+    .main-title { text-align: center; font-family: 'Cairo'; font-size: 3rem; margin-bottom: 0; }
+    label { color: white !important; font-weight: bold !important; font-family: 'Cairo'; font-size: 1.2rem !important; }
+    .stTextInput input { background-color: white !important; color: black !important; font-weight: bold; border-radius: 12px; height: 50px; }
+    .sentence-card { 
+        background: white; color: #0f172a; padding: 25px; border-radius: 15px; 
+        margin-bottom: 10px; border-right: 10px solid #ef4444; box-shadow: 0px 6px 15px rgba(0,0,0,0.3);
+    }
+    .stButton>button { width: 100%; border-radius: 12px; background: #ef4444; color: white; font-weight: bold; height: 50px; border: none; font-size: 1.1rem; }
+    .section-header { border-bottom: 3px solid #ef4444; padding-bottom: 5px; margin-top: 40px; font-family: 'Cairo'; }
+    .bio-text { font-style: italic; color: #cbd5e1; font-size: 1rem; margin-top: 5px; line-height: 1.6; }
+    </style>
+    
+    <link rel="apple-touch-icon" href="logo_animated.gif">
+    """, unsafe_allow_html=True)
+
 # --- 6. نظام التنقل ---
 if 'page' not in st.session_state: st.session_state.page = 'home'
 
@@ -98,7 +99,6 @@ if st.session_state.page == 'home':
     if logo_b64: st.markdown(f'<center><img src="data:image/gif;base64,{logo_b64}" width="220"></center>', unsafe_allow_html=True)
     st.markdown("<h1 class='main-title'>قاموس الأبطال</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; font-size:1.2rem;'>ALABTAL DICTIONARY</p>", unsafe_allow_html=True)
-    
     for row_grades in [["g1", "g2", "g3"], ["g4", "g5", "g6"]]:
         cols = st.columns(3)
         for i, gid in enumerate(row_grades):
@@ -131,7 +131,7 @@ elif st.session_state.page == 'search':
         if q_audio: st.audio(q_audio)
         pdf_path = f"{st.session_state.grade_id}_{st.session_state.term}.pdf"
         
-        # استخدام Spinner مخصص باسم القاموس
+        # استخدام Spinner مخصص باسم السلسلة
         with st.spinner('ALABTAL DICTIONARY... جاري البحث'):
             sentences, pages = advanced_search(pdf_path, query)
             if sentences:
@@ -143,26 +143,4 @@ elif st.session_state.page == 'search':
                         <p style="color: #64748b; font-size: 0.8rem;">Page: {s['page']}</p>
                     </div>
                     """, unsafe_allow_html=True)
-                    st.write("🔊 استمع للجملة:")
-                    s_audio = speak(s['raw'])
-                    if s_audio: st.audio(s_audio)
-                
-                st.markdown("<h3 class='section-header'>📖 صفحات الكتاب كاملة</h3>", unsafe_allow_html=True)
-                for p in pages:
-                    st.info(f"الصفحة رقم: {p['num']}")
-                    st.image(p['image'], use_container_width=True)
-            else: st.warning("لم نجد نتائج.")
-    if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
-
-# --- 7. التذييل (Footer) ومعلومات المبدع ---
-st.markdown("<br><br>", unsafe_allow_html=True)
-f_c1, f_c2, f_c3 = st.columns([1, 2, 1])
-with f_c2:
-    st.markdown("<div style='text-align:center; border-top: 1px solid rgba(255,255,255,0.1); padding: 20px;'>", unsafe_allow_html=True)
-    p_img = get_base64('personal_photo.jpg')
-    if p_img: st.markdown(f'<img src="data:image/jpeg;base64,{p_img}" style="width:110px; border-radius:50%; border:3px solid #ef4444;">', unsafe_allow_html=True)
-    st.markdown("### Created by Mr. Walid")
-    st.markdown("<p class='bio-text'>مؤلف سلسلة كتب الأبطال ومدرس لغة إنجليزية متخصص في تأليف وتطوير المحتوى التعليمي.</p>", unsafe_allow_html=True)
-    st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
-    st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Alabtalbooks)") 
-    st.markdown("</div>", unsafe_allow_html=True)
+                    st.
