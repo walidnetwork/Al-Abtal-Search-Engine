@@ -143,7 +143,7 @@ elif st.session_state.page == 'search':
             else: st.warning("لم نجد نتائج.")
     if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
 
-# --- 7. التذييل (Footer) ومعلومات المبدع والبايو ---
+# --- 7. التذييل (Footer) ومعلومات المبدع والبايو المعدل ---
 st.markdown("<br><br>", unsafe_allow_html=True)
 f_c1, f_c2, f_c3 = st.columns([1, 2, 1])
 with f_c2:
@@ -151,13 +151,13 @@ with f_c2:
     p_img = get_base64('personal_photo.jpg')
     if p_img: st.markdown(f'<img src="data:image/jpeg;base64,{p_img}" style="width:110px; border-radius:50%; border:3px solid #ef4444;">', unsafe_allow_html=True)
     st.markdown("### Created by Mr. Walid")
-    # قسم البايو الجديد
+    # البايو المعدل حسب طلبك
     st.markdown("""
         <p class='bio-text'>
-        مؤلف سلسلة كتب الأبطال ومدرس لغة إنجليزية متخصص في تطوير المحتوى التعليمي التفاعلي.<br>
-        هدفنا تقديم تجربة تعليمية ممتعة وسهلة لكل بطل صغير.
+        مؤلف سلسلة كتب الأبطال ومدرس لغة إنجليزية متخصص في تأليف وتطوير المحتوى التعليمي.
         </p>
     """, unsafe_allow_html=True)
     st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
+    # رابط صفحة السلسلة الصحيح
     st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Heroesseries123)") 
     st.markdown("</div>", unsafe_allow_html=True)
