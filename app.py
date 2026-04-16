@@ -1,101 +1,122 @@
 import streamlit as st
-import fitz  # PyMuPDF
-from gtts import gTTS
-import io
-from PIL import Image
-import re
-import os
+import time
+import base64
 
-# 1. إعدادات الواجهة
-st.set_page_config(page_title="قاموس الأبطال الشامل", page_icon="🦸‍♂️", layout="centered")
+# --- إعدادات الصفحة الأساسية ---
+st.set_page_config(page_title="Alabtal AI Dictionary", layout="centered", initial_sidebar_state="collapsed")
 
-# 2. تصميم الواجهة (CSS)
+# --- دالة تحويل الموارد لعملها برمجياً (Base64) ---
+def get_base64(bin_file):
+    try:
+        with open(bin_file, 'rb') as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except:
+        return ""
+
+# --- تحسين الواجهة بـ CSS لكسر البهتان ---
 st.markdown("""
     <style>
-    .stApp { background: linear-gradient(135deg, #e0f2fe 0%, #fefce8 100%); }
-    .main-title { color: #1e40af; font-family: 'Arial Black', sans-serif; font-size: 38px; text-shadow: 2px 2px #ffffff; text-align: center; }
-    .sentence-box { 
-        background-color: #ffffff; padding: 25px; border-radius: 20px; 
-        border: 3px solid #3b82f6; margin-bottom: 15px;
-        box-shadow: 0px 5px 15px rgba(59, 130, 246, 0.1);
-        color: #1e3a8a !important; font-size: 24px; font-weight: bold; text-align: center;
+    .main {
+        background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
+        color: white;
     }
-    .highlight { color: #ffffff; background-color: #ef4444; padding: 2px 10px; border-radius: 8px; }
+    .stButton>button {
+        width: 100%;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #ef4444, #b91c1c);
+        color: white;
+        font-weight: bold;
+        border: none;
+        height: 45px;
+        transition: 0.3s ease;
+    }
+    .stButton>button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0px 5px 15px rgba(239, 68, 68, 0.5);
+    }
+    img {
+        border-radius: 15px;
+        box-shadow: 0px 10px 20px rgba(0,0,0,0.3);
+    }
     </style>
     """, unsafe_allow_html=True)
 
-def display_hero_logo():
-    # البحث عن اللوجو بجانب الملف مباشرة
-    possible_paths = ["logo.png", "logo.png.png"]
-    found_path = next((p for p in possible_paths if os.path.exists(p)), None)
-    if found_path:
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2: st.image(found_path, width=180)
+# إدارة حالة التطبيق (Stages)
+if 'stage' not in st.session_state:
+    st.session_state.stage = 'splash'
 
-if 'logged_in' not in st.session_state: st.session_state.logged_in = False
+# --- 1. شاشة الترحيب (Splash Screen) ---
+if st.session_state.stage == 'splash':
+    placeholder = st.empty()
+    with placeholder.container():
+        logo_b64 = get_base64('logo_animated.gif')
+        audio_b64 = get_base64('start_theme.wav')
+        
+        st.markdown(f"""
+            <div style="display: flex; justify-content: center; align-items: center; height: 70vh; flex-direction: column; text-align: center;">
+                <img src="data:image/gif;base64,{logo_b64}" width="250">
+                <audio autoplay><source src="data:audio/wav;base64,{audio_b64}" type="audio/wav"></audio>
+                <h2 style="font-family: Cairo; margin-top: 25px; color: #f8fafc;">مرحباً بك يا بطل في عالم الأبطال</h2>
+            </div>
+        """, unsafe_allow_html=True)
+        time.sleep(4) # وقت عرض اللوجو
+    st.session_state.stage = 'select_grade'
+    st.rerun()
 
-if not st.session_state.logged_in:
-    display_hero_logo()
-    st.markdown('<div class="main-title">قاموس الأبطال</div>', unsafe_allow_html=True)
-    STUDENT_CODES = ["HERO2026", "ALABTAL", "2026101"]
-    code = st.text_input("ادخل كود التفعيل:", type="password")
-    if st.button("انطلق الآن! 🚀", use_container_width=True):
-        if code in STUDENT_CODES:
-            st.session_state.logged_in = True
-            st.rerun()
-        else: st.error("الكود غير صحيح!")
-else:
-    display_hero_logo()
-    st.markdown('<div class="main-title">مدرسة الأبطال الذكية</div>', unsafe_allow_html=True)
-    grade_option = st.selectbox("اختر صفك الدراسي:", ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"])
+# --- 2. واجهة اختيار الصف الدراسي ---
+elif st.session_state.stage == 'select_grade':
+    st.markdown("<h1 style='text-align: center;'>🦸‍♂️ اختر صفك الدراسي</h1>", unsafe_allow_html=True)
     
-    grade_map = {
-        "Grade 1": "g1_t1.pdf", "Grade 2": "g2_t1.pdf", "Grade 3": "g3_t1.pdf",
-        "Grade 4": "g4_t1.pdf", "Grade 5": "g5_t1.pdf", "Grade 6": "g6_t1.pdf"
-    }
-    selected_pdf = grade_map[grade_option]
-    search_query = st.text_input(f"🔍 ابحث عن كلمة في ({grade_option}):").strip()
+    # توزيع الصفوف في شبكة (Grid)
+    col1, col2, col3 = st.columns(3)
+    grades = [("G1", "cover_g1.jpg"), ("G2", "cover_g2.jpg"), ("G3", "cover_g3.jpg"), 
+              ("G4", "cover_g4.jpg"), ("G5", "cover_g5.jpg"), ("G6", "cover_g6.jpg")]
+    
+    for i, (g_name, g_img) in enumerate(grades):
+        with [col1, col2, col3][i % 3]:
+            st.image(g_img, use_container_width=True)
+            if st.button(f"الصف {g_name[-1]}", key=f"btn_{g_name}"):
+                st.session_state.grade = g_name
+                st.session_state.stage = 'select_term'
+                st.rerun()
 
-    if search_query:
-        try:
-            tts_word = gTTS(text=search_query, lang='en')
-            word_fp = io.BytesIO()
-            tts_word.write_to_fp(word_fp)
-            st.audio(word_fp)
+# --- 3. واجهة اختيار الترم الدراسي ---
+elif st.session_state.stage == 'select_term':
+    st.markdown(f"<h1 style='text-align: center;'>📚 {st.session_state.grade} - اختر الترم</h1>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image(f"cover_{st.session_state.grade.lower()}_t1.jpg")
+        if st.button("الترم الأول", key="t1"):
+            st.session_state.term = "T1"
+            st.session_state.stage = 'search_mode'
+            st.rerun()
+    with col2:
+        # ملاحظة: الترم الثاني بصيغة PNG حسب ملفاتك المرفوعة
+        st.image(f"cover_{st.session_state.grade.lower()}_t2.png")
+        if st.button("الترم الثاني", key="t2"):
+            st.session_state.term = "T2"
+            st.session_state.stage = 'search_mode'
+            st.rerun()
 
-            if os.path.exists(selected_pdf):
-                doc = fitz.open(selected_pdf)
-                best_page_num = None
-                found_sentences = []
-                search_pattern = r'\b' + re.escape(search_query) + r'\b'
-                
-                for page_num, page in enumerate(doc):
-                    if page_num < 5: continue
-                    text = page.get_text("text").replace('\n', ' ')
-                    if re.search(search_pattern, text, re.IGNORECASE):
-                        if best_page_num is None: best_page_num = page_num
-                        raw = re.findall(r'([^.!?]*' + re.escape(search_query) + r'[^.!?]*[.!?]?)', text, re.IGNORECASE)
-                        for s in raw:
-                            if 3 <= len(s.split()) <= 15: found_sentences.append(s.strip())
-
-                if best_page_num is not None:
-                    st.markdown(f"<h4 style='color:#1e40af;'>🖼️ لقطة من كتاب {grade_option}:</h4>", unsafe_allow_html=True)
-                    page_img = doc.load_page(best_page_num)
-                    pix = page_img.get_pixmap(matrix=fitz.Matrix(2, 2)) 
-                    img_data = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                    st.image(img_data, use_container_width=True)
-
-                if found_sentences:
-                    st.markdown("<h4 style='color:#1e40af;'>📝 جمل الأبطال:</h4>", unsafe_allow_html=True)
-                    for s in list(dict.fromkeys(found_sentences))[:3]:
-                        pattern = re.compile(re.escape(search_query), re.IGNORECASE)
-                        highlighted = pattern.sub(f'<span class="highlight">{search_query}</span>', s)
-                        st.markdown(f'<div class="sentence-box">{highlighted}</div>', unsafe_allow_html=True)
-                        tts_sent = gTTS(text=s, lang='en', slow=True) 
-                        sent_fp = io.BytesIO()
-                        tts_sent.write_to_fp(sent_fp)
-                        st.audio(sent_fp)
-                        st.divider()
-            else:
-                st.warning(f"ملف {selected_pdf} غير موجود حالياً على GitHub.")
-        except: st.error("تأكد من سلامة ملف الـ PDF")
+# --- 4. واجهة البحث النهائية ---
+elif st.session_state.stage == 'search_mode':
+    # عرض غلاف الترم في الأعلى
+    current_cover = f"cover_{st.session_state.grade.lower()}_t1.jpg" if st.session_state.term == "T1" else f"cover_{st.session_state.grade.lower()}_t2.png"
+    
+    st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{get_base64(current_cover)}' width='120'></div>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center;'>منهج {st.session_state.grade} - {st.session_state.term}</p>", unsafe_allow_html=True)
+    
+    st.title("🔍 ابحث عن الكلمة")
+    
+    # محرك البحث (يربط بملف الـ PDF المخصص لهذا الصف والترم)
+    query = st.text_input("اكتب الكلمة بالإنجليزية (مثلاً: Apple):")
+    
+    if query:
+        st.success(f"جاري البحث عن '{query}' في قاموس الأبطال...")
+        # هنا سنضيف منطق البحث عن الكلمة في الـ PDF لاحقاً
+        
+    if st.button("🔙 العودة لاختيار الصفوف"):
+        st.session_state.stage = 'select_grade'
+        st.rerun()
