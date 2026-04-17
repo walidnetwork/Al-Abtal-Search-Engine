@@ -96,36 +96,7 @@ st.markdown("""
     .section-header { border-bottom: 3px solid #ef4444; padding-bottom: 5px; margin-top: 40px; font-family: 'Cairo'; }
     .bio-text { font-style: italic; color: #cbd5e1; font-size: 1rem; margin-top: 5px; line-height: 1.6; }
     </style>
-<script>
-    function installApp() {
-        alert("يا بطل! لتثبيت القاموس:\n1. اضغط على الثلاث نقاط (⋮) بالأعلى.\n2. اختر 'تثبيت التطبيق' أو 'Add to Home Screen'.");
-    }
-    </script>
-
-    <div onclick="installApp()" style="
-        position: fixed;
-        bottom: 80px;
-        left: 20px;
-        background-color: #ef4444;
-        color: white !important;
-        padding: 12px 20px;
-        border-radius: 50px;
-        font-weight: bold;
-        font-family: 'Cairo';
-        box-shadow: 0px 8px 20px rgba(0,0,0,0.6);
-        cursor: pointer;
-        z-index: 999999 !important;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border: 2px solid white;
-        pointer-events: auto !important;
-    ">
-        📲 تثبيت القاموس على موبايلك
-    </div>
-    
-    <link rel="apple-touch-icon" href="logo_animated.gif">
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # --- 6. نظام التنقل ---
 if 'page' not in st.session_state: st.session_state.page = 'home'
@@ -202,3 +173,14 @@ with f_c2:
     st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
     st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Alabtalbooks)") 
     st.markdown("</div>", unsafe_allow_html=True)
+# --- زر تثبيت القاموس العائم (مستقل في نهاية الملف) ---
+st.markdown("""
+    <script>
+    function installApp() {
+        alert("يا بطل! لتثبيت القاموس:\\n1. اضغط على الثلاث نقاط (⋮) بالأعلى.\\n2. اختر 'تثبيت التطبيق' أو 'Add to Home Screen'.");
+    }
+    </script>
+    <div onclick="installApp()" style="position: fixed; bottom: 20px; left: 20px; background-color: #ef4444; color: white !important; padding: 12px 20px; border-radius: 50px; font-weight: bold; box-shadow: 0px 8px 20px rgba(0,0,0,0.6); cursor: pointer; z-index: 999999; display: flex; align-items: center; gap: 8px; border: 2px solid white;">
+        📲 تثبيت القاموس على موبايلك
+    </div>
+    """, unsafe_allow_html=True)
