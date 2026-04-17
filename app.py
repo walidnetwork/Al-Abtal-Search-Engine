@@ -173,28 +173,3 @@ with f_c2:
     st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
     st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Alabtalbooks)") 
     st.markdown("</div>", unsafe_allow_html=True)
-# --- الحل الجذري والمضمون (بدون جافا سكريبت) ---
-st.divider()
-st.markdown("### 📲 تثبيت قاموس الأبطال على موبايلك")
-
-# استخدام زر بايثون أصلي من Streamlit
-if st.button("🚀 اضغط هنا لبدء التثبيت الآن"):
-    # إظهار تعليمات واضحة داخل الصفحة لا يمكن حظرها
-    st.balloons() # احتفال بسيط للطالب
-    
-    with st.expander("✨ اضغط هنا لمشاهدة خطوات التثبيت (مهم جداً)", expanded=True):
-        st.success("يا بطل، لكي يظهر القاموس وسط ألعابك، اتبع هذه الخطوات البسيطة:")
-        
-        tab1, tab2 = st.tabs(["🌐 أندرويد (Chrome/Edge)", "🍎 آيفون (Safari)"])
-        
-        with tab1:
-            st.write("1️⃣ اضغط على **الثلاث نقاط (⋮)** في أعلى أو أسفل المتصفح.")
-            st.write("2️⃣ ابحث عن خيار **'تثبيت التطبيق'** أو **'إضافة إلى الهاتف'**.")
-            st.write("3️⃣ اضغط **إضافة (Add)**.. ومبروك عليك!")
-            
-        with tab2:
-            st.write("1️⃣ اضغط على زر **المشاركة (Share)** (المربع وسهم للأعلى).")
-            st.write("2️⃣ ابحث عن خيار **'إضافة للشاشة الرئيسية'** (Add to Home Screen).")
-            st.write("3️⃣ اضغط **إضافة**.. وستجد القاموس جاهزاً!")
-
-    st.warning("⚠️ ملاحظة: إذا كنت تفتح الرابط من داخل (فيسبوك)، اضغط على (⋮) بالأعلى واختر 'فتح في المتصفح' أولاً.")
