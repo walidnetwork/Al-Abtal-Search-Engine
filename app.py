@@ -96,6 +96,32 @@ st.markdown("""
     .section-header { border-bottom: 3px solid #ef4444; padding-bottom: 5px; margin-top: 40px; font-family: 'Cairo'; }
     .bio-text { font-style: italic; color: #cbd5e1; font-size: 1rem; margin-top: 5px; line-height: 1.6; }
     </style>
+    <script>
+    function installApp() {
+        alert("لبطل الأبطال: اضغط على 'الثلاث نقاط' في أعلى المتصفح (أو علامة المشاركة في الآيفون) ثم اختر 'Install' أو 'Add to Home Screen' ليظهر القاموس بجانب ألعابك وتطبيقاتك!");
+    }
+    </script>
+
+    <div class="install-btn" onclick="installApp()" style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background-color: #ef4444;
+        color: white !important;
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-family: 'Cairo';
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.5);
+        cursor: pointer;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid white;
+    ">
+        📲 تثبيت القاموس على موبايلك
+    </div>
     
     <link rel="apple-touch-icon" href="logo_animated.gif">
     """, unsafe_allow_html=True)
