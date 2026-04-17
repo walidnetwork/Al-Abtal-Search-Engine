@@ -159,18 +159,24 @@ elif st.session_state.page == 'search':
                     st.info(f"الصفحة رقم: {p['num']}")
                     st.image(p['image'], use_container_width=True)
             else: st.warning("لم نجد نتائج.")
-    if st.button("🔙 عودة"): st.session_state.page = 'home'; st.rerun()
+if st.button("🔙 عودة للرئيسية"):
+            st.session_state.page = 'home'
+            st.rerun()
+    else:
+        st.warning("⚠️ لم نجد نتائج لهذه الكلمة.. جرب كلمة أخرى يا بطل!")
+        if st.button("🔙 عودة"):
+            st.session_state.page = 'home'
+            st.rerun()
+
 # --- 7. التذييل (Footer) ومعلومات المبدع ---
 st.write("---")
 f_c1, f_c2, f_c3 = st.columns([1, 2, 1])
 
 with f_c2:
-    # عرض الصورة الشخصية
     p_img = get_base64('personal_photo.jpg')
     if p_img:
         st.markdown(f'<div style="text-align:center;"><img src="data:image/jpeg;base64,{p_img}" style="width:110px; border-radius:50%; border:3px solid #ef4444; box-shadow: 0px 4px 15px rgba(0,0,0,0.3);"></div>', unsafe_allow_html=True)
     
-    # معلومات المبدع
     st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
     st.markdown("### Created by Mr. Walid Elhagary")
     st.markdown("<p style='color: #cbd5e1; font-size: 0.9rem;'>مؤلف سلسلة كتب الأبطال ومتخصص في تأليف وتطوير المحتوى التعليمي</p>", unsafe_allow_html=True)
@@ -178,13 +184,8 @@ with f_c2:
     st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/share/15fGv6mC8C/)")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- زر العودة الإجباري للرئيسية (لحل مشكلة الاختفاء) ---
-st.write("")
-if st.button("🏠 العودة لشاشة القاموس الرئيسية"):
-    st.session_state.page = 'home'
-    st.rerun()
-
-# --- زر التثبيت الآمن (الذي لا يسبب مشاكل) ---
+# --- زر التثبيت في القائمة الجانبية (آمن ومضمون) ---
+st.sidebar.write("---")
 if st.sidebar.button("📲 طريقة تثبيت القاموس"):
+    st.sidebar.balloons()
     st.sidebar.info("يا بطل! اضغط على (⋮) بالأعلى واختر Add to Home Screen")
-    st.balloons()
