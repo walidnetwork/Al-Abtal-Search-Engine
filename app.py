@@ -21,31 +21,34 @@ st.markdown("""
         color: white; font-weight: bold; font-size: 1.2rem; height: 3.5em;
         border: 2px solid #f87171; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
     }
-    .stButton>button:hover { transform: scale(1.05); transition: 0.3s; }
-    .cover-card { border-radius: 20px; border: 3px solid #334155; box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
     .sentence-box {
         background: #1e293b; padding: 20px; border-radius: 15px; margin-bottom: 10px;
-        border-right: 6px solid #ef4444; font-size: 1.3rem;
+        border-right: 6px solid #ef4444; 
+        font-size: 1.5rem; 
+        color: #ffffff !important; /* لون النص أبيض واضح جداً */
+        line-height: 1.6;
     }
+    .word-highlight { color: #ff4b4b; font-weight: bold; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 2. دالات المساعدة ---
+# --- 2. دالات المساعدة (مع إضافة السرعة) ---
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         with open(bin_file, 'rb') as f:
             return base64.b64encode(f.read()).decode()
     return None
 
+@st.cache_data # تجعل النطق سريعاً جداً
 def speak_clean(text):
-    # تنظيف النص من الرموز للنطق
     clean_text = re.sub(r'[^a-zA-Z0-9\s.,!?]', '', text)
     tts = gTTS(text=clean_text, lang='en')
     fp = io.BytesIO()
     tts.write_to_fp(fp)
     fp.seek(0)
-    return fp
+    return fp.read()
 
+@st.cache_data # تجعل البحث داخل الكتاب سريعاً جداً
 def advanced_search(pdf_path, word):
     extracted_sentences = []
     full_pages = []
@@ -63,7 +66,7 @@ def advanced_search(pdf_path, word):
                 for line in lines:
                     clean_line = line.strip()
                     if word_pattern.search(clean_line) and len(clean_line) > 3:
-                        display_text = re.sub(word_pattern, f"<span style='color:#ef4444; font-weight:bold;'>{word}</span>", clean_line)
+                        display_text = re.sub(word_pattern, f'<span class="word-highlight">{word}</span>', clean_line)
                         if clean_line not in [s['raw'] for s in extracted_sentences]:
                             extracted_sentences.append({"display": display_text, "raw": clean_line})
         doc.close()
@@ -76,87 +79,56 @@ if 'grade' not in st.session_state: st.session_state.grade = None
 
 # --- 4. واجهة الترحيب ---
 if st.session_state.step == 'welcome':
-    st.markdown("<h1 style='text-align:center;'>🦸‍♂️ مرحباً بك يا بطل في عالم الأبطال</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>🦸‍♂️ مرحباً بك يا بطل</h1>", unsafe_allow_html=True)
     logo = get_base64('logo_animated.gif') or get_base64('logo.png')
     if logo: st.markdown(f'<div style="text-align:center;"><img src="data:image/gif;base64,{logo}" width="250"></div>', unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align:center;'>ALABTAL DICTIONARY</h2>", unsafe_allow_html=True)
-    if st.button("🚀 ابدأ المغامرة الآن"):
+    if st.button("🚀 ابدأ المغامرة"):
         st.session_state.step = 'select_grade'; st.rerun()
 
-# --- 5. واجهة اختيار الصف (حل مشكلة Duplicate ID) ---
+# --- 5. واجهة اختيار الصف ---
 elif st.session_state.step == 'select_grade':
-    st.markdown("<h2 style='text-align:center;'>اختر صفك الدراسي يا بطل</h2>", unsafe_allow_html=True)
-    
-    # مصفوفة الصفوف
-    grades_info = [
-        {"id": 1, "name": "الصف الأول"},
-        {"id": 2, "name": "الصف الثاني"},
-        {"id": 3, "name": "الصف الثالث"},
-        {"id": 4, "name": "الصف الرابع"},
-        {"id": 5, "name": "الصف الخامس"},
-        {"id": 6, "name": "الصف السادس"},
-    ]
-    
-    for g in grades_info:
-        col_img, col_btn = st.columns([1, 1.5])
+    st.markdown("<h2 style='text-align:center;'>اختر صفك الدراسي</h2>", unsafe_allow_html=True)
+    for i in range(1, 7):
+        col_img, col_btn = st.columns([1, 2])
         with col_img:
-            img_name = f"cover_g{g['id']}.jpg"
-            img_b64 = get_base64(img_name)
-            if img_b64:
-                st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="cover-card" width="220">', unsafe_allow_html=True)
+            img_b64 = get_base64(f"cover_g{i}.jpg")
+            if img_b64: st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" style="width:180px; border-radius:15px;">', unsafe_allow_html=True)
         with col_btn:
-            st.write("<br>" * 3, unsafe_allow_html=True)
-            # إضافة key فريد لكل زرار لمنع الخطأ
-            if st.button(f"دخول {g['name']} الابتدائي", key=f"unique_grade_btn_{g['id']}"):
-                st.session_state.grade = g['id']
-                st.session_state.step = 'select_term'; st.rerun()
-        st.markdown("<hr style='opacity:0.2'>", unsafe_allow_html=True)
+            st.write("<br>" * 2, unsafe_allow_html=True)
+            if st.button(f"دخول الصف {i} الابتدائي", key=f"g_btn_{i}"):
+                st.session_state.grade = i; st.session_state.step = 'select_term'; st.rerun()
 
 # --- 6. واجهة اختيار الترم ---
 elif st.session_state.step == 'select_term':
     g = st.session_state.grade
-    st.markdown(f"<h2 style='text-align:center;'>قاموس الأبطال - الصف {g}</h2>", unsafe_allow_html=True)
-    
+    st.markdown(f"<h2 style='text-align:center;'>الصف {g}</h2>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         img_t1 = get_base64(f"cover_g{g}_t1.jpg")
-        if img_t1: st.markdown(f'<img src="data:image/jpeg;base64,{img_t1}" class="cover-card" width="100%">', unsafe_allow_html=True)
-        if st.button("الترم الأول", key="term1_btn"):
-            st.session_state.term = 1; st.session_state.step = 'search'; st.rerun()
+        if img_t1: st.image(f"data:image/jpeg;base64,{img_t1}")
+        if st.button("الترم الأول", key="t1"): st.session_state.term = 1; st.session_state.step = 'search'; st.rerun()
     with c2:
         img_t2 = get_base64(f"cover_g{g}_t2.jpg")
-        if img_t2: st.markdown(f'<img src="data:image/jpeg;base64,{img_t2}" class="cover-card" width="100%">', unsafe_allow_html=True)
-        if st.button("الترم الثاني", key="term2_btn"):
-            st.session_state.term = 2; st.session_state.step = 'search'; st.rerun()
-    
-    if st.button("🔙 العودة"):
-        st.session_state.step = 'select_grade'; st.rerun()
+        if img_t2: st.image(f"data:image/jpeg;base64,{img_t2}")
+        if st.button("الترم الثاني", key="t2"): st.session_state.term = 2; st.session_state.step = 'search'; st.rerun()
 
 # --- 7. محرك البحث والنتائج ---
 elif st.session_state.step == 'search':
     g, t = st.session_state.grade, st.session_state.term
-    st.markdown(f"<h2 style='text-align:center;'>🔍 محرك البحث - صف {g} ترم {t}</h2>", unsafe_allow_html=True)
-    
-    # تحديد ملف الـ PDF
     pdf_file = f"g{g}_t{t}.pdf"
     if not os.path.exists(pdf_file): pdf_file = "g1_t2.pdf" 
 
     word = st.text_input("ادخل الكلمة:", placeholder="اكتب هنا...").strip()
-    
     if word:
         st.audio(speak_clean(word))
         sentences, pages = advanced_search(pdf_file, word)
-        
         if sentences:
             st.markdown("### 📝 جمل من المنهج")
             for i, s in enumerate(sentences[:10]):
                 st.markdown(f"<div class='sentence-box'>📄 {s['display']}</div>", unsafe_allow_html=True)
                 if st.button(f"🔊 استمع", key=f"v_{i}"):
                     st.audio(speak_clean(s['raw']))
-        
         if pages:
-            st.markdown("### 📖 من داخل الكتاب")
+            st.markdown("### 📖 من الكتاب")
             for p in pages: st.image(p['image'], use_container_width=True)
-
-    if st.button("🔙 عودة"):
-        st.session_state.step = 'select_term'; st.rerun()
+    if st.button("🔙 عودة"): st.session_state.step = 'select_term'; st.rerun()
