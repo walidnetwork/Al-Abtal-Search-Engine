@@ -130,23 +130,32 @@ if st.session_state.step == 'welcome':
     if st.button("🚀 هيا بنا نبدأ المغامرة"):
         st.session_state.step = 'select_grade'; st.rerun()
 
-# --- 5. المرحلة 2: اختيار الصف الدراسي ---
+# --- 5. المرحلة 2: اختيار الصف الدراسي (معدلة لتظهر كل الصفوف) ---
 elif st.session_state.step == 'select_grade':
     st.markdown("<h2 style='text-align:center;'>اختر صفك الدراسي يا بطل</h2>", unsafe_allow_html=True)
     
-    # عرض الأغلفة من 1 إلى 6 بالتتابع
+    # قائمة الصفوف الستة
     for i in range(1, 7):
-        col_img, col_btn = st.columns([1, 2])
-        with col_img:
-            img_name = f"cover_g{i}.jpg"
-            img_b64 = get_base64(img_name)
-            if img_b64:
-                st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="cover-img" width="100%">', unsafe_allow_html=True)
-        with col_btn:
-            st.write("<br>" * 3, unsafe_allow_html=True)
-            if st.button(f"دخول الصف {i} الابتدائي", key=f"g_{i}"):
-                st.session_state.grade = i
-                st.session_state.step = 'select_term'; st.rerun()
+        # إنشاء حاوية لكل صف عشان نفصلهم عن بعض بشكل شيك
+        with st.container():
+            col_img, col_btn = st.columns([1, 1.5]) # موازنة الحجم بين الصورة والزر
+            
+            with col_img:
+                img_name = f"cover_g{i}.jpg"
+                img_b64 = get_base64(img_name)
+                if img_b64:
+                    st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="cover-img" style="width:100%; max-width:200px; display:block; margin:auto;">', unsafe_allow_html=True)
+                else:
+                    st.info(f"صورة الصف {i}") # تنبيه لو الصورة مش موجودة على جيت هاب
+            
+            with col_btn:
+                st.write("<br>" if not st.sidebar.checkbox("نمط الموبايل", False) else "", unsafe_allow_html=True)
+                if st.button(f"دخول الصف {i} الابتدائي", key=f"grade_btn_{i}"):
+                    st.session_state.grade = i
+                    st.session_state.step = 'select_term'
+                    st.rerun()
+            
+            st.markdown("<hr style='margin:10px 0; border-color:#334155;'>", unsafe_allow_html=True) # خط فاصل بسيط بين الصفوف
 
 # --- 6. المرحلة 3: اختيار الترم ---
 elif st.session_state.step == 'select_term':
