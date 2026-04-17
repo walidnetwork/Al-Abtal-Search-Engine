@@ -6,7 +6,7 @@ import os
 import fitz  # PyMuPDF
 import re
 
-# --- 1. إعدادات الصفحة - تصميم مسطح وسريع جداً ---
+# --- 1. إعدادات الصفحة والتنسيق ---
 st.set_page_config(page_title="Heroes Dictionary", page_icon="🦸‍♂️", layout="wide")
 
 st.markdown("""
@@ -16,16 +16,12 @@ st.markdown("""
         direction: rtl; text-align: right; font-family: 'Cairo', sans-serif;
         background-color: #0f172a; color: white;
     }
-    /* أزرار مسطحة وسريعة الاستجابة */
     .stButton>button {
         width: 100%; border-radius: 10px; background-color: #ef4444;
         color: white; font-weight: bold; font-size: 1.1rem; height: 3em;
         border: None; box-shadow: None !important;
     }
-    .cover-card { 
-        border-radius: 10px; border: 1px solid #334155; 
-        box-shadow: None !important; 
-    }
+    .cover-card { border-radius: 10px; border: 1px solid #334155; }
     .sentence-box {
         background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 8px;
         border-right: 5px solid #ef4444; font-size: 1.4rem; color: #ffffff !important;
@@ -62,7 +58,7 @@ def advanced_search(pdf_path, word):
             page = doc[page_num]
             text = page.get_text("text")
             if word_pattern.search(text):
-                pix = page.get_pixmap(matrix=fitz.Matrix(1.1, 1.1)) # تقليل الجودة قليلاً لسرعة التحميل
+                pix = page.get_pixmap(matrix=fitz.Matrix(1.1, 1.1))
                 full_pages.append({"num": page_num + 1, "image": pix.tobytes("png")})
                 lines = text.split('\n')
                 for line in lines:
@@ -75,19 +71,27 @@ def advanced_search(pdf_path, word):
     except: pass
     return extracted_sentences, full_pages
 
-# --- 3. إدارة التنقل - يبدأ مباشرة من اختيار الصف ---
+# --- 3. إدارة التنقل ---
 if 'step' not in st.session_state: 
     st.session_state.step = 'select_grade'
 
-# --- 4. واجهة اختيار الصف (الواجهة الأولى الآن) ---
+# --- 4. واجهة اختيار الصف (مع إضافة اللوجو) ---
 if st.session_state.step == 'select_grade':
-    st.markdown("<h2 style='text-align:center;'>🦸‍♂️ قاموس الأبطال - اختر صفك</h2>", unsafe_allow_html=True)
+    # إظهار اللوجو في البداية
+    logo = get_base64('logo_animated.gif') or get_base64('logo.png')
+    if logo:
+        st.markdown(f'<div style="text-align:center;"><img src="data:image/gif;base64,{logo}" width="180"></div>', unsafe_allow_html=True)
+    
+    st.markdown("<h2 style='text-align:center;'>ALABTAL DICTIONARY</h2>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center;'>اختر صفك الدراسي يا بطل</h3>", unsafe_allow_html=True)
+    st.write("<br>", unsafe_allow_html=True)
+
     for i in range(1, 7):
         col_img, col_btn = st.columns([1, 2])
         with col_img:
             img_b64 = get_base64(f"cover_g{i}.jpg")
             if img_b64: 
-                st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="cover-card" style="width:140px;">', unsafe_allow_html=True)
+                st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="cover-card" style="width:130px;">', unsafe_allow_html=True)
         with col_btn:
             st.write("<br>", unsafe_allow_html=True)
             if st.button(f"دخول الصف {i} الابتدائي", key=f"g_btn_{i}"):
@@ -112,35 +116,28 @@ elif st.session_state.step == 'select_term':
         if st.button("الترم الثاني", key="t2_btn"): 
             st.session_state.term = 2; st.session_state.step = 'search'; st.rerun()
     
-    if st.button("🔙 العودة لاختيار الصف"):
+    if st.button("🔙 العودة"):
         st.session_state.step = 'select_grade'; st.rerun()
 
 # --- 6. واجهة محرك البحث ---
 elif st.session_state.step == 'search':
     g, t = st.session_state.grade, st.session_state.term
-    # محاولة فتح ملف الصف والترم المختار، أو الملف الاحتياطي
     pdf_file = f"g{g}_t{t}.pdf"
     if not os.path.exists(pdf_file): pdf_file = "g1_t2.pdf" 
 
-    word = st.text_input("ادخل الكلمة (English):", placeholder="اكتب هنا...").strip()
+    word = st.text_input("ادخل الكلمة (English):", placeholder="...").strip()
     if word:
         st.audio(speak_clean(word))
         sentences, pages = advanced_search(pdf_file, word)
-        
         if sentences:
-            st.markdown("### 📝 جمل من المنهج")
             for i, s in enumerate(sentences[:10]):
                 st.markdown(f"<div class='sentence-box'>📄 {s['display']}</div>", unsafe_allow_html=True)
-                if st.button(f"🔊 استمع", key=f"voice_btn_{i}"):
+                if st.button(f"🔊 استمع", key=f"v_btn_{i}"):
                     st.audio(speak_clean(s['raw']))
-        
         if pages:
-            st.markdown("### 📖 من داخل الكتاب")
             for p in pages: st.image(p['image'], use_container_width=True)
+    if st.button("🔙 العودة"): st.session_state.step = 'select_term'; st.rerun()
 
-    if st.button("🔙 العودة لاختيار الترم"): 
-        st.session_state.step = 'select_term'; st.rerun()
-
-# --- 7. التذييل (Footer) ---
+# --- 7. التذييل ---
 st.write("---")
 st.markdown("<div style='text-align:center; color:#94a3b8; font-size:0.8rem;'>Created by Mr. Walid Elhagary</div>", unsafe_allow_html=True)
