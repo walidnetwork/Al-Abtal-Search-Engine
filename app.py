@@ -49,13 +49,13 @@ def advanced_search(pdf_path, word):
     except: pass
     return extracted_sentences, full_pages
 
-# --- 3. التصميم (CSS) ---
+# --- 3. التصميم (CSS) لإعادة الشكل القديم ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-    html, body, [data-testid="stappviewcontainer"] { direction: rtl; text-align: right; font-family: 'Cairo', sans-serif; background-color: #0f172a; color: white; }
-    .stButton>button { width: 100%; border-radius: 15px; background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; font-weight: bold; height: 3.5em; border: none; }
-    .section-header { border-right: 5px solid #ef4444; padding-right: 15px; margin: 25px 0; }
+    html, body, [data-testid="stappviewcontainer"] { direction: rtl; text-align: right; font-family: 'Cairo', sans-serif; background-color: #1e293b; color: white; }
+    .stButton>button { width: 100%; border-radius: 12px; background: #ef4444; color: white; font-weight: bold; height: 3.5em; border: none; margin-bottom: 20px; }
+    .cover-img { width: 100%; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     </style>
 """, unsafe_allow_html=True)
 
@@ -63,67 +63,63 @@ st.markdown("""
 if 'page' not in st.session_state: st.session_state.page = 'gate'
 if 'grade' not in st.session_state: st.session_state.grade = None
 
-# --- 5. بوابة الدخول (اختيار الصف الدراسي) ---
+# --- 5. بوابة الدخول (الشكل القديم بالأغلفة) ---
 if st.session_state.page == 'gate':
-    st.markdown("<h1 style='text-align:center;'>🦸‍♂️ مرحباً بك في عالم الأبطال</h1>", unsafe_allow_html=True)
-    logo = get_base64('logo.png')
-    if logo: st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{logo}" width="180"></div>', unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>قاموس الأبطال</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>ALABTAL DICTIONARY</p>", unsafe_allow_html=True)
     
-    st.markdown("<h2 style='text-align:center;'>اختر الصف الدراسي:</h2>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    with c1: st.button("Primary 4 (Soon)")
-    with c2:
-        if st.button("Primary 5 ⭐"):
-            st.session_state.grade = "Primary 5"
-            st.session_state.page = 'select_term'
-            st.rerun()
-    with c3: st.button("Primary 6 (Soon)")
+    # عرض غلاف الصف الأول (مثال)
+    c1 = get_base64('cover1.jpg') # تأكد من اسم ملف الغلاف لديك
+    if c1: st.markdown(f'<img src="data:image/jpeg;base64,{c1}" class="cover-img">', unsafe_allow_html=True)
+    if st.button("دخول الصف 1"):
+        st.warning("قريباً")
 
-# --- 6. اختيار الترم (مع عرض الصور) ---
+    # عرض غلاف الصف الثاني
+    c2 = get_base64('cover2.jpg')
+    if c2: st.markdown(f'<img src="data:image/jpeg;base64,{c2}" class="cover-img">', unsafe_allow_html=True)
+    if st.button("دخول الصف 2"):
+        st.warning("قريباً")
+
+    # عرض غلاف الصف الخامس (المتاح)
+    c5 = get_base64('logo.png') # أو غلاف الصف الخامس
+    if c5: st.markdown(f'<img src="data:image/png;base64,{c5}" class="cover-img">', unsafe_allow_html=True)
+    if st.button("دخول الصف 5"):
+        st.session_state.grade = "Primary 5"
+        st.session_state.page = 'select_term'
+        st.rerun()
+
+# --- 6. اختيار الترم ---
 elif st.session_state.page == 'select_term':
-    st.markdown(f"<h1 style='text-align:center;'>قاموس الأبطال - {st.session_state.grade}</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align:center;'>اختر الترم الدراسي:</h3>", unsafe_allow_html=True)
-    
-    t1, t2 = st.columns(2)
-    with t1:
-        cov1 = get_base64('cover1.jpg')
-        if cov1: st.markdown(f'<img src="data:image/jpeg;base64,{cov1}" style="width:100%; border-radius:15px; margin-bottom:10px;">', unsafe_allow_html=True)
-        if st.button("الترم الأول (Term 1)"):
+    st.markdown(f"<h2 style='text-align:center;'>قاموس {st.session_state.grade}</h2>", unsafe_allow_html=True)
+    col_t1, col_t2 = st.columns(2)
+    with col_t1:
+        if st.button("الترم الأول"):
             st.session_state.term = "Term 1"; st.session_state.page = 'app'; st.rerun()
-            
-    with t2:
-        cov2 = get_base64('cover2.jpg')
-        if cov2: st.markdown(f'<img src="data:image/jpeg;base64,{cov2}" style="width:100%; border-radius:15px; margin-bottom:10px;">', unsafe_allow_html=True)
-        if st.button("الترم الثاني (Term 2)"):
+    with col_t2:
+        if st.button("الترم الثاني"):
             st.session_state.term = "Term 2"; st.session_state.page = 'app'; st.rerun()
-
-# --- 7. التطبيق الرئيسي (البحث) ---
-elif st.session_state.page == 'app':
-    st.markdown(f"<h2 style='text-align:center;'>{st.session_state.grade} - {st.session_state.term}</h2>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        query = st.text_input("🔍 ابحث عن كلمة:").strip()
-        if query:
-            st.session_state.search_word = query; st.session_state.page = 'results'; st.rerun()
     if st.button("🔙 العودة"): st.session_state.page = 'gate'; st.rerun()
 
-# --- 8. صفحة النتائج ---
+# --- 7. البحث والنتائج ---
+elif st.session_state.page == 'app':
+    st.markdown(f"<h2 style='text-align:center;'>بحث: {st.session_state.term}</h2>", unsafe_allow_html=True)
+    query = st.text_input("🔍 ابحث عن كلمة:").strip()
+    if query:
+        st.session_state.search_word = query; st.session_state.page = 'results'; st.rerun()
+    if st.button("🔙 تغيير"): st.session_state.page = 'gate'; st.rerun()
+
 elif st.session_state.page == 'results':
     word = st.session_state.search_word
     sentences, pages = advanced_search('book.pdf', word)
-    st.markdown(f"<h3 class='section-header'>🔊 نطق الكلمة: {word}</h3>", unsafe_allow_html=True)
+    st.markdown(f"### نتائج البحث: {word}")
     st.audio(speak(word))
     if sentences:
-        st.markdown("<h3 class='section-header'>📝 جمل من الكتاب</h3>", unsafe_allow_html=True)
-        for s in sentences[:8]:
-            st.markdown(f"<div style='background:#1e293b; padding:15px; border-radius:10px; margin-bottom:10px; border-right:5px solid #ef4444;'>📄 {s['display']}</div>", unsafe_allow_html=True)
+        for s in sentences[:5]: st.info(s['display'])
     if pages:
-        st.markdown("<h3 class='section-header'>📖 صفحات من الكتاب</h3>", unsafe_allow_html=True)
-        for p in pages: st.image(p['image'], caption=f"صفحة {p['num']}", use_container_width=True)
-    if st.button("🔙 عودة للبحث"): st.session_state.page = 'app'; st.rerun()
+        for p in pages: st.image(p['image'], use_container_width=True)
+    if st.button("🔙 عودة"): st.session_state.page = 'app'; st.rerun()
 
-# --- 9. التذييل ---
+# --- التذييل ---
 st.write("---")
 p_img = get_base64('personal_photo.jpg')
-if p_img: st.markdown(f'<div style="text-align:center;"><img src="data:image/jpeg;base64,{p_img}" style="width:100px; border-radius:50%; border:2px solid #ef4444;"></div>', unsafe_allow_html=True)
-st.markdown("<div style='text-align:center;'>Created by Mr. Walid Elhagary</div>", unsafe_allow_html=True)
+if p_img: st.markdown(f'<div style="text-align:center;"><img src="data:image/jpeg;base64,{p_img}" style="width:80px; border-radius:50%; border:2px solid #ef4444;"></div>', unsafe_allow_html=True)
