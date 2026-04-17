@@ -173,14 +173,39 @@ with f_c2:
     st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
     st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Alabtalbooks)") 
     st.markdown("</div>", unsafe_allow_html=True)
-# --- زر تثبيت القاموس العائم (مستقل في نهاية الملف) ---
+# --- زر التثبيت المطور (استجابة فورية) ---
 st.markdown("""
-    <script>
-    function installApp() {
-        alert("يا بطل! لتثبيت القاموس:\\n1. اضغط على الثلاث نقاط (⋮) بالأعلى.\\n2. اختر 'تثبيت التطبيق' أو 'Add to Home Screen'.");
-    }
-    </script>
-    <div onclick="installApp()" style="position: fixed; bottom: 20px; left: 20px; background-color: #ef4444; color: white !important; padding: 12px 20px; border-radius: 50px; font-weight: bold; box-shadow: 0px 8px 20px rgba(0,0,0,0.6); cursor: pointer; z-index: 999999; display: flex; align-items: center; gap: 8px; border: 2px solid white;">
+    <div id="custom-install-btn" style="
+        position: fixed;
+        bottom: 30px;
+        left: 20px;
+        background-color: #ef4444;
+        color: white !important;
+        padding: 14px 22px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-family: 'Cairo', sans-serif;
+        box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
+        cursor: pointer;
+        z-index: 2147483647 !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid white;
+        touch-action: manipulation;
+    ">
         📲 تثبيت القاموس على موبايلك
     </div>
+
+    <script>
+    var btn = document.getElementById('custom-install-btn');
+    var action = function() {
+        alert("يا بطل! لتثبيت القاموس:\\n1. اضغط على الثلاث نقاط (⋮) بالأعلى.\\n2. اختر 'تثبيت التطبيق' أو 'Add to Home Screen'.");
+    };
+    btn.addEventListener('click', action);
+    btn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        action();
+    });
+    </script>
     """, unsafe_allow_html=True)
