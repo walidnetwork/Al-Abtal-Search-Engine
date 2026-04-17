@@ -6,29 +6,31 @@ import os
 import fitz  # PyMuPDF
 import re
 
-# --- 1. إعدادات الصفحة - سرعة فائقة وتصميم متمركز ---
+# --- 1. إعدادات الصفحة - تركيز الأزرار في المنتصف ---
 st.set_page_config(page_title="Heroes Dictionary", page_icon="🦸‍♂️", layout="wide")
 
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-    html, body, [data-testid="stappviewcontainer"] {
-        direction: rtl; text-align: center; font-family: 'Cairo', sans-serif;
-        background-color: #0f172a; color: white;
-    }
     
-    /* جعل حاوية الأزرار في المنتصف تماماً */
-    [data-testid="column"] {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    /* جعل الصفحة بالكامل تتمركز في المنتصف */
+    html, body, [data-testid="stappviewcontainer"] {
+        direction: rtl; 
+        text-align: center; 
+        font-family: 'Cairo', sans-serif;
+        background-color: #0f172a; 
+        color: white;
     }
 
-    /* تصميم أزرار الصفوف - أطول ومتمركزة */
+    /* إجبار أزرار Streamlit على التمركز في المنتصف */
+    .stButton {
+        display: flex;
+        justify-content: center;
+    }
+
     .stButton>button {
-        width: 85% !important; /* جعل الزر أطول ليشغل مساحة أكبر */
-        margin: 0 auto;
-        display: block;
+        width: 80% !important; /* طول الزر */
+        max-width: 400px;
         border-radius: 15px; 
         background: linear-gradient(135deg, #ef4444, #b91c1c);
         color: white; 
@@ -36,10 +38,9 @@ st.markdown("""
         font-size: 1.2rem; 
         height: 3.8em; 
         border: None;
-        margin-bottom: 10px;
+        margin: 5px auto; /* توسيط تلقائي */
     }
     
-    /* إصلاح اتجاه الجمل الإنجليزية */
     .sentence-box {
         background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 8px;
         border-right: 5px solid #ef4444; font-size: 1.4rem; color: #ffffff !important;
@@ -98,7 +99,7 @@ def advanced_search(pdf_path, word):
 # --- 3. إدارة التنقل ---
 if 'step' not in st.session_state: st.session_state.step = 'select_grade'
 
-# --- 4. واجهة اختيار الصف (متمركزة الآن) ---
+# --- 4. واجهة اختيار الصف (أسماء عربية + توسيط) ---
 if st.session_state.step == 'select_grade':
     logo = get_base64('logo.png')
     if logo: st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{logo}" width="120"></div>', unsafe_allow_html=True)
@@ -106,9 +107,12 @@ if st.session_state.step == 'select_grade':
     st.markdown("<h3 style='text-align:center; color:#94a3b8;'>اختر صفك الدراسي يا بطل</h3>", unsafe_allow_html=True)
     st.write("<br>", unsafe_allow_html=True)
 
-    # عرض الصفوف في عمود واحد متمركز
-    for i in range(1, 7):
-        if st.button(f"🎓 الصف {i} الابتدائي", key=f"g_btn_{i}"):
+    # قائمة الأسماء العربية للصفوف
+    grade_names = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"]
+
+    # عرض الصفوف بشكل متمركز تماماً
+    for i, name in enumerate(grade_names, 1):
+        if st.button(f"🎓 الصف {name} الابتدائي", key=f"g_btn_{i}"):
             st.session_state.grade = i
             st.session_state.step = 'select_term'
             st.rerun()
@@ -116,7 +120,8 @@ if st.session_state.step == 'select_grade':
 # --- 5. واجهة اختيار الترم ---
 elif st.session_state.step == 'select_term':
     g = st.session_state.grade
-    st.markdown(f"<h3 style='text-align:center;'>الصف {g} الابتدائي</h3>", unsafe_allow_html=True)
+    grade_names = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"]
+    st.markdown(f"<h3 style='text-align:center;'>الصف {grade_names[g-1]} الابتدائي</h3>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         img_t1 = get_base64(f"cover_g{g}_t1.jpg")
@@ -141,7 +146,7 @@ elif st.session_state.step == 'search':
         if sentences:
             for i, s in enumerate(sentences[:10]):
                 st.markdown(f"<div class='sentence-box'>{s['display']}</div>", unsafe_allow_html=True)
-                if st.button(f"🔊 استمع للجملة {i+1}", key=f"v_btn_{i}"): st.audio(speak_clean(s['raw']))
+                if st.button(f"🔊 استمع", key=f"v_btn_{i}"): st.audio(speak_clean(s['raw']))
         if pages:
             for p in pages: st.image(p['image'], use_container_width=True)
     if st.button("🔙 عودة"): st.session_state.step = 'select_term'; st.rerun()
