@@ -6,7 +6,7 @@ import os
 import fitz  # PyMuPDF
 import re
 
-# --- 1. إعدادات الصفحة والتصميم المستقر ---
+# --- 1. إعدادات الصفحة والتصميم السريع ---
 st.set_page_config(page_title="Heroes Dictionary", page_icon="🦸‍♂️", layout="wide")
 
 st.markdown("""
@@ -16,9 +16,10 @@ st.markdown("""
         direction: rtl; text-align: right; font-family: 'Cairo', sans-serif;
         background-color: #0f172a; color: white;
     }
+    /* تصغير الأزرار لتناسب العرض الجانبي */
     .stButton>button {
-        width: 100%; border-radius: 12px; background-color: #ef4444;
-        color: white; font-weight: bold; font-size: 1.1rem; height: 3.2em; border: None;
+        width: 100%; border-radius: 8px; background-color: #ef4444;
+        color: white; font-weight: bold; font-size: 0.85rem; height: 2.5em; border: None;
     }
     .sentence-box {
         background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 8px;
@@ -26,38 +27,29 @@ st.markdown("""
     }
     .word-highlight { color: #ff4b4b; font-weight: bold; }
 
-    /* تصميم زر الفيسبوك المزدوج (كما في الصورة) */
+    /* تنسيق كارت الأيقونة */
+    .icon-box {
+        text-align: center;
+        padding: 5px;
+        border-radius: 10px;
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        margin-bottom: 10px;
+    }
+    .icon-img { width: 80px; height: auto; border-radius: 5px; margin-bottom: 5px; }
+
+    /* زر الفيسبوك المزدوج */
     .fb-split-btn {
-        display: inline-flex;
-        align-items: center;
-        text-decoration: none;
-        border-radius: 5px;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-        font-weight: bold;
-        margin-top: 15px;
+        display: inline-flex; align-items: center; text-decoration: none;
+        border-radius: 5px; overflow: hidden; font-family: Arial, sans-serif;
+        font-weight: bold; margin-top: 15px;
     }
-    .fb-left {
-        background-color: #4b4b4b; /* رمادي داكن */
-        color: white;
-        padding: 10px 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
-        letter-spacing: 1px;
-    }
-    .fb-right {
-        background-color: #0078d4; /* أزرق فيسبوك */
-        color: white;
-        padding: 10px 20px;
-        font-size: 1rem;
-        letter-spacing: 1px;
-    }
+    .fb-left { background-color: #4b4b4b; color: white; padding: 8px 12px; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
+    .fb-right { background-color: #0078d4; color: white; padding: 8px 15px; font-size: 0.9rem; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 2. دالات المساعدة السريعة ---
+# --- 2. دالات المساعدة ---
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         with open(bin_file, 'rb') as f:
@@ -74,8 +66,7 @@ def speak_clean(text):
     return fp.read()
 
 def advanced_search(pdf_path, word):
-    extracted_sentences = []
-    full_pages = []
+    extracted_sentences, full_pages = [], []
     if not os.path.exists(pdf_path): return [], []
     try:
         doc = fitz.open(pdf_path)
@@ -100,37 +91,37 @@ def advanced_search(pdf_path, word):
 # --- 3. التنقل ---
 if 'step' not in st.session_state: st.session_state.step = 'select_grade'
 
-# --- 4. واجهة الصفوف (مباشرة) ---
+# --- 4. واجهة الأيقونات (واجهة واحدة بدون سكرول) ---
 if st.session_state.step == 'select_grade':
     logo = get_base64('logo.png')
-    if logo: st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{logo}" width="150"></div>', unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align:center;'>ALABTAL DICTIONARY</h2>", unsafe_allow_html=True)
-    st.write("<br>", unsafe_allow_html=True)
-
+    if logo: st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{logo}" width="120"></div>', unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center;'>ALABTAL DICTIONARY</h3>", unsafe_allow_html=True)
+    
+    # توزيع الأيقونات في شبكة 3 أعمدة
+    cols = st.columns(3)
     for i in range(1, 7):
-        col_img, col_btn = st.columns([1, 2.5])
-        with col_img:
+        with cols[(i-1) % 3]:
+            st.markdown(f'<div class="icon-box">', unsafe_allow_html=True)
             img_b64 = get_base64(f"cover_g{i}.jpg")
-            if img_b64: st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" style="width:110px; border-radius:8px;">', unsafe_allow_html=True)
-        with col_btn:
-            st.write("<br>", unsafe_allow_html=True)
-            if st.button(f"دخول الصف {i} الابتدائي", key=f"btn_{i}"):
+            if img_b64:
+                st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="icon-img">', unsafe_allow_html=True)
+            if st.button(f"G {i}", key=f"g_{i}"):
                 st.session_state.grade = i; st.session_state.step = 'select_term'; st.rerun()
-        st.write("---")
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 5. واجهة الترم ---
 elif st.session_state.step == 'select_term':
     g = st.session_state.grade
-    st.markdown(f"<h2 style='text-align:center;'>الصف {g}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align:center;'>الصف {g}</h3>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         img_t1 = get_base64(f"cover_g{g}_t1.jpg")
-        if img_t1: st.image(f"data:image/jpeg;base64,{img_t1}", width=180)
-        if st.button("الترم الأول", key="t1"): st.session_state.term = 1; st.session_state.step = 'search'; st.rerun()
+        if img_t1: st.image(f"data:image/jpeg;base64,{img_t1}", width=150)
+        if st.button("الترم الأول"): st.session_state.term = 1; st.session_state.step = 'search'; st.rerun()
     with c2:
         img_t2 = get_base64(f"cover_g{g}_t2.jpg")
-        if img_t2: st.image(f"data:image/jpeg;base64,{img_t2}", width=180)
-        if st.button("الترم الثاني", key="t2"): st.session_state.term = 2; st.session_state.step = 'search'; st.rerun()
+        if img_t2: st.image(f"data:image/jpeg;base64,{img_t2}", width=150)
+        if st.button("الترم الثاني"): st.session_state.term = 2; st.session_state.step = 'search'; st.rerun()
     if st.button("🔙 عودة"): st.session_state.step = 'select_grade'; st.rerun()
 
 # --- 6. واجهة البحث ---
@@ -138,29 +129,24 @@ elif st.session_state.step == 'search':
     g, t = st.session_state.grade, st.session_state.term
     pdf_file = f"g{g}_t{t}.pdf"
     if not os.path.exists(pdf_file): pdf_file = "g1_t2.pdf" 
-    word = st.text_input("ادخل الكلمة:", placeholder="Search...").strip()
+    word = st.text_input("Search:", placeholder="Type here...").strip()
     if word:
         st.audio(speak_clean(word))
         sentences, pages = advanced_search(pdf_file, word)
-        if sentences:
-            for i, s in enumerate(sentences[:10]):
-                st.markdown(f"<div class='sentence-box'>📄 {s['display']}</div>", unsafe_allow_html=True)
-                if st.button(f"🔊 استمع", key=f"v_{i}"): st.audio(speak_clean(s['raw']))
-        if pages:
-            for p in pages: st.image(p['image'], use_container_width=True)
+        for i, s in enumerate(sentences[:10]):
+            st.markdown(f"<div class='sentence-box'>📄 {s['display']}</div>", unsafe_allow_html=True)
+            if st.button(f"🔊 Listen", key=f"v_{i}"): st.audio(speak_clean(s['raw']))
+        for p in pages: st.image(p['image'], use_container_width=True)
     if st.button("🔙 عودة"): st.session_state.step = 'select_term'; st.rerun()
 
-# --- 7. التذييل مع زر الفيسبوك الاحترافي ---
+# --- 7. التذييل ---
 st.write("---")
 st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
 st.markdown(f"""
-    <div style='margin-bottom:10px; color:#94a3b8; font-size:0.9rem;'>Created by Mr. Walid Elhagary</div>
+    <div style='color:#94a3b8; font-size:0.8rem;'>Created by Mr. Walid Elhagary</div>
     <a href="https://www.facebook.com/share/15fGv6mC8C/" target="_blank" class="fb-split-btn">
-        <div class="fb-left">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            FACEBOOK
-        </div>
-        <div class="fb-right">FOLLOW OUR SERIES</div>
+        <div class="fb-left">FACEBOOK</div>
+        <div class="fb-right">FOLLOW US</div>
     </a>
 """, unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
