@@ -27,7 +27,24 @@ st.markdown("""
         border-right: 5px solid #ef4444; font-size: 1.4rem; color: #ffffff !important;
     }
     .word-highlight { color: #ff4b4b; font-weight: bold; }
-    .fb-link { color: #1877f2; text-decoration: none; font-weight: bold; }
+    
+    /* تصميم صندوق الفيسبوك */
+    .fb-container {
+        background-color: #1877f2;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        font-weight: bold;
+        gap: 10px;
+        transition: 0.3s;
+    }
+    .fb-container:hover {
+        background-color: #166fe5;
+        transform: scale(1.02);
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -115,9 +132,7 @@ elif st.session_state.step == 'select_term':
         if img_t2: st.image(f"data:image/jpeg;base64,{img_t2}", width=180)
         if st.button("الترم الثاني", key="t2_btn"): 
             st.session_state.term = 2; st.session_state.step = 'search'; st.rerun()
-    
-    if st.button("🔙 العودة"):
-        st.session_state.step = 'select_grade'; st.rerun()
+    if st.button("🔙 العودة"): st.session_state.step = 'select_grade'; st.rerun()
 
 # --- 6. واجهة محرك البحث ---
 elif st.session_state.step == 'search':
@@ -138,13 +153,14 @@ elif st.session_state.step == 'search':
             for p in pages: st.image(p['image'], use_container_width=True)
     if st.button("🔙 العودة"): st.session_state.step = 'select_term'; st.rerun()
 
-# --- 7. التذييل (Footer) مع رابط الفيسبوك ---
+# --- 7. التذييل (Footer) مع زر الفيسبوك المستطيل ---
 st.write("---")
-st.markdown("""
-    <div style='text-align:center; color:#94a3b8; font-size:1rem;'>
-        Created by Mr. Walid Elhagary <br>
-        <a href='https://www.facebook.com/share/15fGv6mC8C/' target='_blank' class='fb-link'>
-            👍 تابعونا على فيسبوك: سلسلة كتب الأبطال
-        </a>
-    </div>
+st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
+st.markdown(f"""
+    <div style='margin-bottom:10px; color:#94a3b8;'>Created by Mr. Walid Elhagary</div>
+    <a href="https://www.facebook.com/share/15fGv6mC8C/" target="_blank" class="fb-container">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        <span>Follow us on Facebook</span>
+    </a>
 """, unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
