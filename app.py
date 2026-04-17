@@ -173,45 +173,66 @@ with f_c2:
     st.markdown("<h4>سلسلة كتب الأبطال</h4>", unsafe_allow_html=True)
     st.markdown("[![Facebook](https://img.shields.io/badge/Facebook-Follow%20Our%20Series-blue?style=for-the-badge&logo=facebook)](https://www.facebook.com/Alabtalbooks)") 
     st.markdown("</div>", unsafe_allow_html=True)
-# --- زر التثبيت المحرك لنظام التشغيل ---
+# --- زر التثبيت المثالي (الأداء + الشياكة) ---
 st.markdown("""
     <style>
-    .floating-hero-btn {
-        position: fixed; bottom: 30px; left: 20px;
+    .hero-final-btn {
+        position: fixed;
+        bottom: 30px;
+        left: 20px;
         background: linear-gradient(135deg, #ef4444, #b91c1c);
-        color: white !important; padding: 15px 25px;
-        border-radius: 50px; font-weight: bold; font-family: 'Cairo', sans-serif;
-        box-shadow: 0px 10px 20px rgba(0,0,0,0.4); z-index: 999999;
-        border: 2px solid rgba(255,255,255,0.3); display: flex;
-        align-items: center; gap: 10px; cursor: pointer;
-        transition: transform 0.1s; outline: none;
-        -webkit-user-select: none; user-select: none;
+        color: white !important;
+        padding: 15px 25px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-family: 'Cairo', sans-serif;
+        box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
+        z-index: 9999999;
+        border: 2px solid white;
+        cursor: pointer;
+        outline: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
     }
-    .floating-hero-btn:active { transform: scale(0.95); }
+    .hero-final-btn:active { transform: scale(0.95); }
     </style>
 
-    <button class="floating-hero-btn" id="installBtn">
+    <button class="hero-final-btn" id="pwaInstallBtn">
         📲 تثبيت تطبيق الأبطال
     </button>
 
     <script>
     let deferredPrompt;
-    const btn = document.getElementById('installBtn');
+    const btn = document.getElementById('pwaInstallBtn');
 
+    // 1. الاستماع لطلب التثبيت من نظام التشغيل
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        btn.style.display = 'flex';
     });
 
-    btn.onclick = async () => {
+    // 2. تنفيذ التثبيت عند الضغط
+    btn.addEventListener('click', async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                console.log('Hero student installed the app!');
+            }
             deferredPrompt = null;
         } else {
-            alert("يا بطل! لتثبيت القاموس:\\n1️⃣ اضغط على (⋮) أو زر المشاركة.\\n2️⃣ اختر 'Add to Home Screen' أو 'تثبيت التطبيق'.");
+            // حل احتياطي في حال عدم دعم المتصفح للتثبيت التلقائي
+            alert("يا بطل! لتثبيت القاموس:\\n1️⃣ اضغط على (⋮) بالأعلى.\\n2️⃣ اختر 'إضافة إلى الشاشة الرئيسية' (Add to Home Screen).");
         }
-    };
+    });
+
+    // لضمان عمل اللمس على الموبايل بسرعة
+    btn.addEventListener('touchstart', function(e) {
+        // نترك المتصفح يتعامل مع الكليك الطبيعي هنا لمنع تداخل الأوامر
+    });
     </script>
 """, unsafe_allow_html=True)
