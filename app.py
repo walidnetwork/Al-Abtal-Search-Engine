@@ -56,7 +56,7 @@ def play_magic_sound():
     magic_audio = '<iframe src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-61905/zapsplat_multimedia_notification_chime_bell_001_61908.mp3" allow="autoplay" style="display:none"></iframe>'
     st.markdown(magic_audio, unsafe_allow_html=True)
 
-# --- 3. تصميم CSS المضبط ---
+# --- 3. تصميم CSS المضبط (النيون + الأعمدة) ---
 logo_base64 = get_base64('logo.png')
 
 st.markdown(f"""
@@ -67,11 +67,11 @@ st.markdown(f"""
         background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
     }}
 
-    /* إجبار الأعمدة على البقاء بجانب بعضها 50% لكل جانب في الموبايل */
+    /* إجبار 3 أعمدة بجانب بعضها حتى في الموبايل */
     [data-testid="column"] {{
-        width: 48% !important;
-        flex: 1 1 48% !important;
-        min-width: 48% !important;
+        width: 32% !important;
+        flex: 1 1 32% !important;
+        min-width: 32% !important;
     }}
 
     .main-title {{
@@ -80,38 +80,48 @@ st.markdown(f"""
         color: #fff;
         text-shadow: 0 0 15px #00d4ff;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }}
 
+    /* إعادة تأثير النيون المضيء للأزرار */
     .stButton>button {{
         width: 100% !important;
-        background: rgba(0, 212, 255, 0.03) !important;
+        background: rgba(0, 212, 255, 0.05) !important;
         border: 2px solid #00d4ff !important;
         color: #00d4ff !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         font-family: 'Orbitron', sans-serif !important;
-        font-size: 0.8rem !important;
-        height: 50px !important;
+        font-size: clamp(0.6rem, 2vw, 0.9rem) !important;
+        height: 55px !important;
         margin-bottom: 10px !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        transition: 0.3s all ease-in-out;
+    }}
+
+    .stButton>button:hover {{
+        background: #00d4ff !important;
+        color: #000 !important;
+        box-shadow: 0 0 30px #00d4ff !important;
+        transform: scale(1.05);
     }}
 
     .center-logo-img {{
         width: 100%;
-        max-width: 240px;
+        max-width: 250px;
         animation: pulseAndGlow 3s infinite ease-in-out;
-        margin: 10px auto;
+        margin: 0 auto 20px auto;
         display: block;
     }}
 
     @keyframes pulseAndGlow {{
         0% {{ transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4)); }}
-        50% {{ transform: scale(1.03); filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.7)); }}
+        50% {{ transform: scale(1.05); filter: drop-shadow(0 0 25px rgba(239, 68, 68, 0.8)); }}
         100% {{ transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4)); }}
     }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. واجهة الاختيار (لوجو + 3 صفوف أفقية) ---
+# --- 4. واجهة الاختيار (لوجو + 3 أعمدة تحته) ---
 if 'step' not in st.session_state: st.session_state.step = 'select_grade'
 
 if st.session_state.step == 'select_grade':
@@ -120,29 +130,22 @@ if st.session_state.step == 'select_grade':
     if logo_base64:
         st.markdown(f'<img src="data:image/png;base64,{logo_base64}" class="center-logo-img">', unsafe_allow_html=True)
 
-    # التوزيع الجديد: كل صف يحتوي على مرحلتين بجوار بعضهما
-    # الصف الأول
-    c1, c2 = st.columns(2)
-    with c1:
+    # إنشاء 3 أعمدة (كل عمود به صفين)
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
         if st.button("GRADE 1"): play_magic_sound(); st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
-    with c2:
         if st.button("GRADE 2"): play_magic_sound(); st.session_state.grade = 2; st.session_state.step = 'select_term'; st.rerun()
     
-    # الصف الثاني
-    c3, c4 = st.columns(2)
-    with c3:
+    with col2:
         if st.button("GRADE 3"): play_magic_sound(); st.session_state.grade = 3; st.session_state.step = 'select_term'; st.rerun()
-    with c4:
         if st.button("GRADE 4"): play_magic_sound(); st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
 
-    # الصف الثالث
-    c5, c6 = st.columns(2)
-    with c5:
+    with col3:
         if st.button("GRADE 5"): play_magic_sound(); st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
-    with c6:
         if st.button("GRADE 6"): play_magic_sound(); st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
 
-# --- باقي الكود المستقر ---
+# --- باقي الأجزاء المستقرة (ترم وبحث وتذييل) ---
 elif st.session_state.step == 'select_term':
     g = st.session_state.grade
     st.markdown(f'<h2 style="text-align:center; color:#00d4ff;">Grade {g}</h2>', unsafe_allow_html=True)
@@ -173,7 +176,7 @@ elif st.session_state.step == 'search':
             for p in pages: st.image(p['image'], use_container_width=True)
     if st.button("🔙 BACK"): st.session_state.step = 'select_term'; st.rerun()
 
-# --- التذييل (Footer) مع استعادة الحقوق ---
+# التذييل مع الحقوق والرابط
 st.markdown("""
     <div style="text-align:center; margin-top:40px; padding-bottom: 20px;">
         <p style="color:#64748b; font-size:0.8rem; margin-bottom:10px;">Created by Mr. Walid Elhagary</p>
