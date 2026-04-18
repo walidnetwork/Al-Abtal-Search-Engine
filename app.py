@@ -5,6 +5,7 @@ import io
 import os
 import fitz  # PyMuPDF
 import re
+import time # ضروري للصوت السحري
 
 # --- 1. إعدادات الهوية ---
 st.set_page_config(
@@ -52,7 +53,25 @@ def advanced_search(pdf_path, word):
     except: pass
     return extracted_sentences, full_pages
 
-# --- 3. تصميم CSS المضبط للموبايل واللابتوب ---
+# --- 🪄 دالة الصوت السحري ---
+# ستقوم بتشغيل صوت قصير عند النقر (يتطلب ملف chime.mp3 بجانب الكود)
+def play_magic_sound():
+    sound_file = "chime.mp3"
+    if os.path.exists(sound_file):
+        # نقوم بتحميل الصوت لمرة واحدة
+        with open(sound_file, "rb") as f:
+            sound_bytes = f.read()
+        
+        # نقوم بإنشاء مشغل صوتي مؤقت
+        sound_base64 = base64.b64encode(sound_bytes).decode()
+        audio_html = f'<audio autoplay><source src="data:audio/mp3;base64,{sound_base64}" type="audio/mp3"></audio>'
+        
+        # نقوم بحقن مشغل الصوت في الصفحة وتختفي فوراً
+        st.markdown(audio_html, unsafe_allow_html=True)
+        # تأخير قصير جداً لضمان تشغيل الصوت قبل الـ rerun
+        # time.sleep(0.1) # جرب تفعيله لو الصوت لم يعمل
+
+# --- 3. تصميم CSS المضبط (اللوجو فوق والصفوف تحت) ---
 logo_base64 = get_base64('logo.png')
 
 st.markdown(f"""
@@ -61,90 +80,101 @@ st.markdown(f"""
     
     [data-testid="stAppViewContainer"] {{
         background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
-    }}
-
-    /* إجبار الأعمدة على البقاء بجانب بعضها في الموبايل */
-    [data-testid="column"] {{
-        width: calc(33% - 1rem) !important;
-        flex: 1 1 calc(33% - 1rem) !important;
-        min-width: calc(33% - 1rem) !important;
+        overflow-x: hidden; /* منع التمرير الأفقي */
     }}
 
     .main-title {{
         font-family: 'Cairo', sans-serif;
-        font-size: clamp(1.5rem, 5vw, 3rem);
+        font-size: clamp(1.8rem, 5vw, 3.2rem);
         color: #fff;
         text-shadow: 0 0 15px #00d4ff;
         text-align: center;
-        margin-bottom: 20px;
+        margin: 10px 0;
     }}
 
+    /* تصميم الأزرار النيون (Grade) */
     .stButton>button {{
         width: 100% !important;
-        max-width: 130px;
         background: rgba(0, 212, 255, 0.03) !important;
-        border: 1.5px solid #00d4ff !important;
+        border: 2.5px solid #00d4ff !important;
         color: #00d4ff !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
         font-family: 'Orbitron', sans-serif !important;
-        font-size: clamp(0.6rem, 2vw, 0.85rem) !important;
-        height: 45px !important;
-        margin-bottom: 8px !important;
+        font-size: clamp(0.7rem, 2vw, 1rem) !important;
+        height: clamp(50px, 8vh, 60px) !important;
+        margin-bottom: 12px !important;
+        transition: 0.3s;
     }}
 
-    /* محاذاة الأزرار باتجاه اللوجو */
-    [data-testid="column"]:nth-child(1) {{ text-align: right !important; }}
-    [data-testid="column"]:nth-child(3) {{ text-align: left !important; }}
+    .stButton>button:hover {{
+        background: #00d4ff !important;
+        color: #000 !important;
+        box-shadow: 0 0 25px #00d4ff;
+        transform: translateY(-3px);
+    }}
+
+    /* محاذاة الأعمدة */
+    [data-testid="column"] {{ text-align: center !important; }}
+
+    /* حاوية اللوجو - نضمن توسيطه فوق الصفوف */
+    .logo-container {{
+        text-align: center;
+        margin-bottom: 30px;
+    }}
 
     .center-logo-img {{
         width: 100%;
-        max-width: 220px;
+        max-width: clamp(200px, 40vw, 280px);
         animation: pulseAndGlow 3s infinite ease-in-out;
     }}
 
     @keyframes pulseAndGlow {{
         0% {{ transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4)); }}
-        50% {{ transform: scale(1.03); filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.7)); }}
+        50% {{ transform: scale(1.04); filter: drop-shadow(0 0 25px rgba(239, 68, 68, 0.7)); }}
         100% {{ transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4)); }}
     }}
     
     .sentence-box {{
         background: rgba(30, 41, 59, 0.5);
         border-left: 5px solid #00d4ff;
-        padding: 10px;
+        padding: 15px;
         border-radius: 10px;
         margin: 10px 0;
         text-align: left;
         direction: ltr;
-        font-size: 0.9rem;
     }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. واجهة الاختيار (تم استخدام 3 أعمدة فقط للموبايل) ---
+# --- 4. واجهة الاختيار (اللوجو فوق والصفوف تحت في عمودين) ---
 if 'step' not in st.session_state: st.session_state.step = 'select_grade'
 
 if st.session_state.step == 'select_grade':
     st.markdown('<h1 class="main-title">محرك بحث الأبطال</h1>', unsafe_allow_html=True)
     
-    # 3 أعمدة فقط لضمان الثبات على الموبايل
-    col_left, col_mid, col_right = st.columns([1, 1.5, 1])
+    # 1. اللوجو فوق في المنتصف تماماً
+    if logo_base64:
+        st.markdown(f'<div class="logo-container"><img src="data:image/png;base64,{logo_base64}" class="center-logo-img"></div>', unsafe_allow_html=True)
+
+    # 2. الصفوف الستة تحت في عمودين (Grade 1-3 يمين، Grade 4-6 يسار)
+    # نستخدم عمود فارغ صغير على الجانبين للمركزة
+    _, col_grades_left, col_grades_right, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
     
-    with col_left:
-        st.write("<br>", unsafe_allow_html=True)
-        if st.button("GRADE 1"): st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 2"): st.session_state.grade = 2; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 3"): st.session_state.grade = 3; st.session_state.step = 'select_term'; st.rerun()
+    with col_grades_left:
+        # قمنا بتغيير المحاذاة لليمين قليلاً لتقترب من المنتصف
+        st.write("<div style='text-align:right;'>", unsafe_allow_html=True)
+        if st.button("GRADE 1"): play_magic_sound(); st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 2"): play_magic_sound(); st.session_state.grade = 2; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 3"): play_magic_sound(); st.session_state.grade = 3; st.session_state.step = 'select_term'; st.rerun()
+        st.write("</div>", unsafe_allow_html=True)
 
-    with col_mid:
-        if logo_base64:
-            st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{logo_base64}" class="center-logo-img"></div>', unsafe_allow_html=True)
-
-    with col_right:
-        st.write("<br>", unsafe_allow_html=True)
-        if st.button("GRADE 4"): st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 5"): st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 6"): st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
+    with col_grades_right:
+        # قمنا بتغيير المحاذاة لليسار قليلاً لتقترب من المنتصف
+        st.write("<div style='text-align:left;'>", unsafe_allow_html=True)
+        if st.button("GRADE 4"): play_magic_sound(); st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 5"): play_magic_sound(); st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 6"): play_magic_sound(); st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
+        st.write("</div>", unsafe_allow_html=True)
 
 # --- باقي الكود المستقر (اختيار الترم والبحث) ---
 elif st.session_state.step == 'select_term':
