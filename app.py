@@ -131,4 +131,52 @@ if st.session_state.step == 'select_grade':
 
     with col_mid:
         if logo_base64:
-            st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{logo_base64}" class="center-logo-
+            st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{logo_base64}" class="center-logo-img"></div>', unsafe_allow_html=True)
+
+    with col_right:
+        st.write("<br><br>", unsafe_allow_html=True)
+        if st.button("GRADE 4"): st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 5"): st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 6"): st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
+
+elif st.session_state.step == 'select_term':
+    g = st.session_state.grade
+    st.markdown(f'<h2 style="text-align:center; color:#00d4ff;">Grade {g}</h2>', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        img1 = get_base64(f"cover_g{g}_t1.jpg")
+        if img1: st.image(f"data:image/jpeg;base64,{img1}", use_container_width=True)
+        if st.button("TERM 1"): st.session_state.term = 1; st.session_state.step = 'search'; st.rerun()
+    with col2:
+        img2 = get_base64(f"cover_g{g}_t2.jpg")
+        if img2: st.image(f"data:image/jpeg;base64,{img2}", use_container_width=True)
+        if st.button("TERM 2"): st.session_state.term = 2; st.session_state.step = 'search'; st.rerun()
+    if st.button("🔙 BACK"): st.session_state.step = 'select_grade'; st.rerun()
+
+elif st.session_state.step == 'search':
+    g, t = st.session_state.grade, st.session_state.term
+    pdf_file = f"g{g}_t{t}.pdf"
+    st.markdown(f'<h3 style="text-align:center;">Grade {g} - Term {t}</h3>', unsafe_allow_html=True)
+    word = st.text_input("🔍 Search Word...", placeholder="Type here...").strip()
+    
+    if word:
+        st.audio(speak_clean(word))
+        sentences, pages = advanced_search(pdf_file, word)
+        if sentences:
+            for i, s in enumerate(sentences[:10]):
+                st.markdown(f'<div class="sentence-box">{s["display"]}</div>', unsafe_allow_html=True)
+                if st.button(f"🔊 Listen", key=f"v_{i}"): st.audio(speak_clean(s['raw']))
+        if pages:
+            for p in pages: st.image(p['image'], use_container_width=True)
+    
+    if st.button("🔙 BACK"): st.session_state.step = 'select_term'; st.rerun()
+
+# --- 5. التذييل ---
+st.markdown("""
+    <div style="text-align:center; margin-top:40px;">
+        <a href="https://linktr.ee/ALABTAL.books" target="_blank" style="text-decoration:none; color:#00d4ff; border:1px solid #00d4ff; padding:5px 15px; border-radius:15px; font-size:0.8rem;">
+            🔗 جميع منصات الأبطال التعليمية
+        </a>
+        <p style="color:#64748b; font-size:0.7rem; margin-top:10px;">Created by Mr. Walid Elhagary</p>
+    </div>
+""", unsafe_allow_html=True)
