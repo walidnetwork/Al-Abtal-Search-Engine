@@ -82,11 +82,18 @@ st.markdown(f"""
         text-align: center;
         margin-bottom: 5px;
     }}
-    .stMarkdown p, .stAlert p, div[data-testid="stMarkdownContainer"] p {{
+        /* استهداف شامل لكل أنواع النصوص والصناديق */
+    .stMarkdown p, .stAlert p, div[data-testid="stMarkdownContainer"] p, .st-emotion-cache-1kyx60p p, .st-emotion-cache-ke756m p {{
         color: #FFFFFF !important;
-        font-size: 1.1rem !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        font-size: 1.15rem !important;
         font-weight: 500 !important;
     }}
+    /* إجبار الخلفية الشفافة للنصوص داخل الصناديق لتظهر واضحة */
+    div[role="alert"] {{
+        color: #FFFFFF !important;
+    }}
+
     
     /* إعادة تأثير النيون المضيء للأزرار */
     .stButton>button {{
