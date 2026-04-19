@@ -83,7 +83,8 @@ st.markdown(f"""
         margin-bottom: 5px;
     }}
         /* استهداف شامل لكل أنواع النصوص والصناديق */
-    .stMarkdown p, .stAlert p, div[data-testid="stMarkdownContainer"] p, .st-emotion-cache-1kyx60p p, .st-emotion-cache-ke756m p {{
+        p, span, div[data-testid="stMarkdownContainer"] p {{
+
         color: #FFFFFF !important;
         -webkit-text-fill-color: #FFFFFF !important;
         font-size: 1.15rem !important;
