@@ -83,13 +83,27 @@ st.markdown(f"""
         overflow-x: hidden; /* منع التمرير الأفقي */
     }}
 
-    .main-title {{
-        font-family: 'Cairo', sans-serif;
-        font-size: clamp(1.8rem, 5vw, 3.2rem);
-        color: #fff;
-        text-shadow: 0 0 15px #00d4ff;
+   .main-title {{
         text-align: center;
-        margin: 10px 0;
+        margin: 20px 0;
+        color: #FFFFFF !important;
+        font-family: 'Orbitron', sans-serif; /* خط تكنولوجي رائع */
+    }}
+    .main-title .top-word {{
+        display: block;
+        font-size: 3rem;
+        font-weight: 900;
+        letter-spacing: 6px;
+        line-height: 1;
+    }}
+    .main-title .bottom-word {{
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 300;
+        letter-spacing: 3px;
+        text-transform: lowercase;
+        margin-top: 5px;
+        opacity: 0.9;
     }}
 
     /* تصميم الأزرار النيون (Grade) */
@@ -150,7 +164,7 @@ st.markdown(f"""
 if 'step' not in st.session_state: st.session_state.step = 'select_grade'
 
 if st.session_state.step == 'select_grade':
-    st.markdown('<h1 class="main-title">محرك بحث الأبطال</h1>', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="main-title"><span class="top-word">ALABTAL</span><span class="bottom-word">search engine</span></h1>', unsafe_allow_html=True)
     
     # 1. اللوجو فوق في المنتصف تماماً
     if logo_base64:
