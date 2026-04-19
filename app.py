@@ -164,28 +164,30 @@ st.markdown(f"""
 if 'step' not in st.session_state: st.session_state.step = 'select_grade'
 
 if st.session_state.step == 'select_grade':
-        st.markdown(f'<h1 class="main-title"><span class="top-word">ALABTAL</span><span class="bottom-word">search engine</span></h1>', unsafe_allow_html=True)
-        
-        if logo_base64:
-            st.markdown(f'''
-                <div style="text-align: center; margin-top: -40px;">
-                    <img src="data:image/png;base64,{logo_base64}" style="width: 160px; margin-bottom: 10px;">
-                    <p style="color: white; font-family: Cairo; font-size: 1.3rem; font-weight: bold; margin-top: -10px;">اختر صفك الدراسى</p>
-                </div>
-            ''', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="main-title"><span class="top-word">ALABTAL</span><span class="bottom-word">search engine</span></h1>', unsafe_allow_html=True)
+    
+    if logo_base64:
+        st.markdown(f'''
+            <div style="text-align: center; margin-top: -40px;">
+                <img src="data:image/png;base64,{logo_base64}" style="width: 160px; margin-bottom: 10px;">
+                <p style="color: white; font-family: Cairo; font-size: 1.3rem; font-weight: bold; margin-top: -10px;">اختر صفك الدراسى</p>
+            </div>
+        ''', unsafe_allow_html=True)
 
-        # الزراير في عمودين منسقين
-        _, col_left, col_right, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
+    # الزراير في عمودين منسقين
+    _, col_left, col_right, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
 
-        with col_left:
-            if st.button("GRADE 1"): play_magic_sound(); st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
-            if st.button("GRADE 2"): play_magic_sound(); st.session_state.grade = 2; st.session_state.step = 'select_term'; st.rerun()
-            if st.button("GRADE 3"): play_magic_sound(); st.session_state.grade = 3; st.session_state.step = 'select_term'; st.rerun()
+    with col_left:
+        if st.button("GRADE 1"): play_magic_sound(); st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 2"): play_magic_sound(); st.session_state.grade = 2; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 3"): play_magic_sound(); st.session_state.grade = 3; st.session_state.step = 'select_term'; st.rerun()
 
-        with col_right:
-            if st.button("GRADE 4"): play_magic_sound(); st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
-            if st.button("GRADE 5"): play_magic_sound(); st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
-            if st.button("GRADE 6"): play_magic_sound(); st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
+    with col_right:
+        if st.button("GRADE 4"): play_magic_sound(); st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 5"): play_magic_sound(); st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
+        if st.button("GRADE 6"): play_magic_sound(); st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
+
+elif st.session_state.step == 'select_term':
     g = st.session_state.grade
     st.markdown(f'<h2 style="text-align:center; color:#00d4ff;">Grade {g}</h2>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -215,7 +217,9 @@ elif st.session_state.step == 'search':
         if pages:
             for p in pages: st.image(p['image'], use_container_width=True)
     if st.button("🔙 BACK"): st.session_state.step = 'select_term'; st.rerun()
-st.markdown("<div style='text-align: center; color: #FFFFFF; font-family: sans-serif; font-size: 0.85rem; margin-top: 10px; margin-bottom: -10px; opacity: 0.8;'>Created by Mr. Walid Elhagary</div>", unsafe_allow_html=True)
+
+# التوقيع والمنصات (خارج الشروط لتظهر دائماً)
+st.markdown("<div style='text-align: center; color: #FFFFFF; font-family: sans-serif; font-size: 0.85rem; margin-top: 20px; margin-bottom: -10px; opacity: 0.8;'>Created by Mr. Walid Elhagary</div>", unsafe_allow_html=True)
 st.markdown("""
     <div style="text-align:center; margin-top:30px;">
         <a href="https://linktr.ee/ALABTAL.books" target="_blank" style="text-decoration:none; color:#00d4ff; border:1px solid #00d4ff; padding:5px 10px; border-radius:10px; font-size:0.7rem;">
