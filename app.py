@@ -63,11 +63,17 @@ st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Orbitron:wght@700&display=swap');
     
+    /* 🛑 إخفاء القطة والقوائم نهائياً 🛑 */
+    header {{visibility: hidden !important;}}
+    #MainMenu {{visibility: hidden !important;}}
+    footer {{visibility: hidden !important;}}
+    [data-testid="stStatusWidget"] {{visibility: hidden !important;}}
+    /* ---------------------------------- */
+
     [data-testid="stAppViewContainer"] {{
         background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
     }}
 
-    /* إجبار 3 أعمدة بجانب بعضها حتى في الموبايل */
     [data-testid="column"] {{
         width: 32% !important;
         flex: 1 1 32% !important;
@@ -83,7 +89,6 @@ st.markdown(f"""
         margin-bottom: 5px;
     }}
 
-    /* إعادة تأثير النيون المضيء للأزرار */
     .stButton>button {{
         width: 100% !important;
         background: rgba(0, 212, 255, 0.05) !important;
