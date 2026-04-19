@@ -91,6 +91,10 @@ st.markdown(f"""
         text-align: center;
         margin-bottom: 5px;
     }}
+    .stMarkdown p, .stAlert p {
+        color: #FFFFFF !important;
+        font-size: 1.1rem !important;
+}
 
 
     .stButton>button {{
