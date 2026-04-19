@@ -82,7 +82,15 @@ st.markdown(f"""
         background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         overflow-x: hidden; /* منع التمرير الأفقي */
     }}
-
+header[data-testid="stHeader"] {{
+        display: none !important;
+    }}
+    footer {{
+        visibility: hidden;
+    }}
+    #MainMenu {{
+        visibility: hidden;
+    }}
    .main-title {{
         text-align: center;
         margin: 20px 0;
