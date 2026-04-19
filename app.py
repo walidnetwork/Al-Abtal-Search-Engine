@@ -208,18 +208,20 @@ elif st.session_state.step == 'search':
             for p in pages: st.image(p['image'], use_container_width=True)
     if st.button("🔙 BACK"): st.session_state.step = 'select_term'; st.rerun()
 st.markdown("""
-    <link href="https://fonts.cdnfonts.com/css/amsterdam" rel="stylesheet">
-    <div style="
-        text-align: center; 
-        color: #FFFFFF; 
-        font-family: 'Amsterdam Four', sans-serif; 
-        font-size: 2.2rem; 
-        margin-top: 25px; 
-        margin-bottom: -15px;
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&display=swap');
+    
+    .signature-text {
+        font-family: 'Mrs+Saint+Delafield', cursive !important;
+        color: #FFFFFF !important;
+        font-size: 3.5rem !important;
+        text-align: center;
+        margin-top: 20px;
+        margin-bottom: -35px;
         font-weight: 100;
-    ">
-        Walid Elhagary
-    </div>
+    }
+    </style>
+    <div class="signature-text">Walid Elhagary</div>
 """, unsafe_allow_html=True)
 st.markdown("""
     <div style="text-align:center; margin-top:30px;">
