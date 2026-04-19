@@ -117,7 +117,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
     .stButton>button:hover {{
+
         background: #00d4ff !important;
         color: #000 !important;
         box-shadow: 0 0 30px #00d4ff !important;
