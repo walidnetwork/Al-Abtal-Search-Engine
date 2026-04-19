@@ -207,7 +207,7 @@ elif st.session_state.step == 'search':
         if pages:
             for p in pages: st.image(p['image'], use_container_width=True)
     if st.button("🔙 BACK"): st.session_state.step = 'select_term'; st.rerun()
-st.markdown("<center style='color: #00d4ff; font-family: Cairo; font-size: 1rem; margin-bottom: 10px;'>Created by Mr. Walid Elhagary</center>", unsafe_allow_html=True)
+st.markdown("<center style='color: #FFFFFF; font-family: Cairo; font-size: 1.2rem; text-shadow: 0 0 10px #FFFFFF, 0 0 20px #00d4ff, 0 0 30px #00d4ff; margin-bottom: 20px; font-weight: bold;'>Created by Mr. Walid Elhagary</center>", unsafe_allow_html=True)
 st.markdown("""
     <div style="text-align:center; margin-top:30px;">
         <a href="https://linktr.ee/ALABTAL.books" target="_blank" style="text-decoration:none; color:#00d4ff; border:1px solid #00d4ff; padding:5px 10px; border-radius:10px; font-size:0.7rem;">
