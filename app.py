@@ -173,11 +173,9 @@ if st.session_state.step == 'select_grade':
                     <p style="color: white; font-family: Cairo; font-size: 1.3rem; font-weight: bold; margin-top: -10px;">اختر صفك الدراسى</p>
                 </div>
             ''', unsafe_allow_html=True)
-    # 2. الصفوف الستة تحت في عمودين (Grade 1-3 يمين، Grade 4-6 يسار)
-    # نستخدم عمود فارغ صغير على الجانبين للمركزة
-    _, col_grades_left, col_grades_right, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
-    
-    with col_grades_left:
+
+        # الصفوف الستة تحت في عمودين (السطر 178 المعدل)
+        _, col_grades_left, col_grades_right, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
         # قمنا بتغيير المحاذاة لليمين قليلاً لتقترب من المنتصف
         st.write("<div style='text-align:right;'>", unsafe_allow_html=True)
         if st.button("GRADE 1"): play_magic_sound(); st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
