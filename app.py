@@ -174,25 +174,18 @@ if st.session_state.step == 'select_grade':
                 </div>
             ''', unsafe_allow_html=True)
 
-        # الصفوف الستة تحت في عمودين (السطر 178 المعدل)
-        _, col_grades_left, col_grades_right, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
-        # قمنا بتغيير المحاذاة لليمين قليلاً لتقترب من المنتصف
-        st.write("<div style='text-align:right;'>", unsafe_allow_html=True)
-        if st.button("GRADE 1"): play_magic_sound(); st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 2"): play_magic_sound(); st.session_state.grade = 2; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 3"): play_magic_sound(); st.session_state.grade = 3; st.session_state.step = 'select_term'; st.rerun()
-        st.write("</div>", unsafe_allow_html=True)
+        # الزراير في عمودين منسقين
+        _, col_left, col_right, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
 
-    with col_grades_right:
-        # قمنا بتغيير المحاذاة لليسار قليلاً لتقترب من المنتصف
-        st.write("<div style='text-align:left;'>", unsafe_allow_html=True)
-        if st.button("GRADE 4"): play_magic_sound(); st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 5"): play_magic_sound(); st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
-        if st.button("GRADE 6"): play_magic_sound(); st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
-        st.write("</div>", unsafe_allow_html=True)
+        with col_left:
+            if st.button("GRADE 1"): play_magic_sound(); st.session_state.grade = 1; st.session_state.step = 'select_term'; st.rerun()
+            if st.button("GRADE 2"): play_magic_sound(); st.session_state.grade = 2; st.session_state.step = 'select_term'; st.rerun()
+            if st.button("GRADE 3"): play_magic_sound(); st.session_state.grade = 3; st.session_state.step = 'select_term'; st.rerun()
 
-# --- باقي الكود المستقر (اختيار الترم والبحث) ---
-elif st.session_state.step == 'select_term':
+        with col_right:
+            if st.button("GRADE 4"): play_magic_sound(); st.session_state.grade = 4; st.session_state.step = 'select_term'; st.rerun()
+            if st.button("GRADE 5"): play_magic_sound(); st.session_state.grade = 5; st.session_state.step = 'select_term'; st.rerun()
+            if st.button("GRADE 6"): play_magic_sound(); st.session_state.grade = 6; st.session_state.step = 'select_term'; st.rerun()
     g = st.session_state.grade
     st.markdown(f'<h2 style="text-align:center; color:#00d4ff;">Grade {g}</h2>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
